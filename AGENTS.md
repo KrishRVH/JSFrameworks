@@ -16,16 +16,17 @@ This repository contains Tiny Kanban implemented across several JavaScript appro
 - Static implementations: from the repo root, run `python3 -m http.server` and open `http://127.0.0.1:8000/01-vanilla-a-rerender/` or another numbered folder.
 - React: `cd 05-react && bun install && bun run dev` starts Vite locally; `bun run build` creates `dist/`; `bun run preview` serves the production build.
 - Svelte: `cd 06-svelte && bun install && bun run dev`; use `bun run build` and `bun run preview` the same way.
+- Central tooling: from the repo root, run `bun install` once, then `bun run check`, `bun run lint`, or `bun run format` for Biome across the repository.
 
-There is no root package manager workspace. Install dependencies inside each Vite app directory.
+There is a root package only for shared tooling; it is not a package-manager workspace. Install app dependencies inside each Vite app directory.
 
 ## Coding Style & Naming Conventions
 
-Use ES modules throughout. Match the existing two-space indentation, double quotes in JavaScript, and semicolon style already present in the source. Keep shared state logic framework-neutral in `shared/actions.js` and `shared/seed.js`; UI-specific code should stay inside the numbered implementation folders. Prefer descriptive action names such as `addCardState`, `commitEditState`, and `visibleCards`.
+Use ES modules throughout. Biome owns formatting and linting centrally with two-space indentation, double quotes in JavaScript, and semicolons. Keep shared state logic framework-neutral in `shared/actions.js` and `shared/seed.js`; UI-specific code should stay inside the numbered implementation folders. Prefer descriptive action names such as `addCardState`, `commitEditState`, and `visibleCards`.
 
 ## Testing Guidelines
 
-No automated test framework is currently configured. Validate changes manually against `SPEC.md` in every affected implementation. At minimum, check add, delete, move, edit commit/cancel, filter, reset, persistence, and empty-title behavior. For framework apps, run `bun run build` before submitting changes.
+No automated test framework is currently configured. Validate changes manually against `SPEC.md` in every affected implementation. At minimum, check add, delete, move, edit commit/cancel, filter, reset, persistence, and empty-title behavior. For framework apps, run `bun run build` inside each app or `bun run build` from the root before submitting changes.
 
 ## Commit & Pull Request Guidelines
 

@@ -1,13 +1,7 @@
 import {
-  COLUMN_ORDER,
-  COLUMN_TITLES,
-  clearSavedBoard,
-  loadState,
-  saveColumns
-} from "../shared/seed.js";
-import {
   addCardState,
   cancelEditState,
+  cardMatchesFilter,
   commitEditState,
   deleteCardState,
   moveCardState,
@@ -18,10 +12,46 @@ import {
   updateDraftState,
   visibleCards
 } from "../shared/actions.js";
+import {
+  COLUMN_ORDER,
+  COLUMN_TITLES,
+  clearSavedBoard,
+  loadState,
+  moveDestination,
+  saveColumns
+} from "../shared/seed.js";
 
 const $ = window.jQuery;
 const $root = $("#app");
 let state = loadState();
+
+function columnSelector(columnId) {
+  return `.column[data-column-id='${columnId}']`;
+}
+
+function cardSelector(cardId) {
+  return `.card[data-card-id="${$.escapeSelector(cardId)}"]`;
+}
+
+function cardsFor(columnId) {
+  return $root.find(`${columnSelector(columnId)} .cards`);
+}
+
+function cardAttrs(columnId, cardId) {
+  return { "data-column-id": columnId, "data-card-id": cardId };
+}
+
+function $button(label, attrs = {}) {
+  return $("<button>", { type: "button", ...attrs }).text(label);
+}
+
+function isEditingCard(columnId, cardId) {
+  return state.editing?.columnId === columnId && state.editing.cardId === cardId;
+}
+
+function isVisible(card) {
+  return Boolean(card && cardMatchesFilter(card, state.filter));
+}
 
 function persist() {
   saveColumns(state.columns);
@@ -31,86 +61,89 @@ function cardById(columnId, cardId) {
   return state.columns[columnId].find((card) => card.id === cardId);
 }
 
-function cardNode(columnId, card) {
-  return $("<article>", {
-    class: "card",
-    "data-card-id": card.id,
-    "data-column-id": columnId
-  }).append(
-    $("<button>", {
-      type: "button",
-      class: "card-title card-title-button",
-      "data-action": "start-edit",
-      "data-column-id": columnId,
-      "data-card-id": card.id
-    }).text(card.title),
-    $("<div>", { class: "card-actions" }).append(
-      $("<button>", {
-        type: "button",
-        text: "Left",
-        "data-action": "move",
-        "data-direction": "left",
-        "data-column-id": columnId,
-        "data-card-id": card.id,
-        disabled: COLUMN_ORDER.indexOf(columnId) === 0
-      }),
-      $("<button>", {
-        type: "button",
-        text: "Right",
-        "data-action": "move",
-        "data-direction": "right",
-        "data-column-id": columnId,
-        "data-card-id": card.id,
-        disabled: COLUMN_ORDER.indexOf(columnId) === COLUMN_ORDER.length - 1
-      }),
-      $("<button>", {
-        type: "button",
-        text: "Delete",
-        "data-action": "delete",
-        "data-column-id": columnId,
-        "data-card-id": card.id
-      })
-    )
+function emptyState() {
+  return $("<div>", { class: "empty-state" }).text("No matching cards");
+}
+
+function cardContent(columnId, card) {
+  const data = cardAttrs(columnId, card.id);
+
+  if (isEditingCard(columnId, card.id)) {
+    return $("<input>", {
+      ...data,
+      "data-action": "draft",
+      "aria-label": "Edit card title"
+    }).val(state.editing.draftTitle);
+  }
+
+  return $button(card.title, {
+    ...data,
+    class: "card-title card-title-button",
+    "data-action": "start-edit"
+  });
+}
+
+function cardActions(columnId, cardId) {
+  const columnIndex = COLUMN_ORDER.indexOf(columnId);
+  const data = cardAttrs(columnId, cardId);
+
+  return $("<div>", { class: "card-actions" }).append(
+    $button("Left", {
+      ...data,
+      "data-action": "move",
+      "data-direction": "left",
+      disabled: columnIndex === 0
+    }),
+    $button("Right", {
+      ...data,
+      "data-action": "move",
+      "data-direction": "right",
+      disabled: columnIndex === COLUMN_ORDER.length - 1
+    }),
+    $button("Delete", { ...data, "data-action": "delete" })
   );
 }
 
+function cardNode(columnId, card) {
+  const data = cardAttrs(columnId, card.id);
+
+  return $("<article>", {
+    class: "card",
+    ...data
+  }).append(cardContent(columnId, card), cardActions(columnId, card.id));
+}
+
 function syncCounts() {
-  $(".count-pill").text(`${totalCount(state.columns)} total`);
+  $root.find(".count-pill").text(`${totalCount(state.columns)} total`);
   COLUMN_ORDER.forEach((columnId) => {
-    $(`.column[data-column-id='${columnId}'] .column-count`).text(
-      `${state.columns[columnId].length} cards`
-    );
+    $root
+      .find(`${columnSelector(columnId)} .column-count`)
+      .text(`${state.columns[columnId].length} cards`);
   });
 }
 
 function updateCardControls($card, columnId) {
   $card.attr("data-column-id", columnId);
   $card.find("[data-column-id]").attr("data-column-id", columnId);
-  $card
-    .find("[data-direction='left']")
-    .prop("disabled", COLUMN_ORDER.indexOf(columnId) === 0);
+  $card.find("[data-direction='left']").prop("disabled", COLUMN_ORDER.indexOf(columnId) === 0);
   $card
     .find("[data-direction='right']")
     .prop("disabled", COLUMN_ORDER.indexOf(columnId) === COLUMN_ORDER.length - 1);
 }
 
 function syncEmptyState(columnId) {
-  const $cards = $(`.column[data-column-id='${columnId}'] .cards`);
+  const $cards = cardsFor(columnId);
   const visibleCount = $cards.children(".card").length;
   $cards.children(".empty-state").remove();
   if (!visibleCount) {
-    $cards.append($("<div>", { class: "empty-state" }).text("No matching cards"));
+    $cards.append(emptyState());
   }
 }
 
 function rerenderVisibleCards(columnId) {
-  const $cards = $(`.column[data-column-id='${columnId}'] .cards`).empty();
   const cards = visibleCards(state, columnId);
-  if (cards.length) {
-    cards.forEach((card) => $cards.append(cardNode(columnId, card)));
-  } else {
-    $cards.append($("<div>", { class: "empty-state" }).text("No matching cards"));
-  }
+  const cardNodes = cards.length ? cards.map((card) => cardNode(columnId, card)) : [emptyState()];
+  cardsFor(columnId).empty().append(cardNodes);
 }
 
 function renderShell() {
@@ -137,13 +170,17 @@ function renderShell() {
             $("<h2>", { class: "column-title" }).text(COLUMN_TITLES[columnId]),
             $("<span>", { class: "column-count" }).text(`${state.columns[columnId].length} cards`)
           ),
-          $("<form>", { class: "add-form", "data-action": "add", "data-column-id": columnId }).append(
+          $("<form>", {
+            class: "add-form",
+            "data-action": "add",
+            "data-column-id": columnId
+          }).append(
             $("<input>", {
               name: "title",
               placeholder: `Add to ${COLUMN_TITLES[columnId]}`,
               autocomplete: "off"
             }),
-            $("<button>", { type: "submit", text: "Add" })
+            $("<button>", { type: "submit" }).text("Add")
           ),
           $("<div>", { class: "cards" })
         )
@@ -157,17 +194,20 @@ $root.on("submit", "form[data-action='add']", (event) => {
   event.preventDefault();
   const form = event.currentTarget;
   const columnId = form.dataset.columnId;
-  const before = state.columns[columnId].length;
-  state = addCardState(state, columnId, String(new FormData(form).get("title") ?? ""));
-  if (state.columns[columnId].length === before) return;
+  const nextState = addCardState(state, columnId, String(new FormData(form).get("title") ?? ""));
+  form.reset();
+
+  if (nextState === state) {
+    return;
+  }
+
+  state = nextState;
   const card = state.columns[columnId].at(-1);
-  const filter = state.filter.trim().toLowerCase();
-  if (!filter || card.title.toLowerCase().includes(filter)) {
-    const $cards = $(`.column[data-column-id='${columnId}'] .cards`);
+  if (isVisible(card)) {
+    const $cards = cardsFor(columnId);
     $cards.children(".empty-state").remove();
     $cards.append(cardNode(columnId, card));
   }
-  form.reset();
   persist();
   syncCounts();
 });
@@ -175,7 +215,7 @@ $root.on("submit", "form[data-action='add']", (event) => {
 $root.on("click", "[data-action='delete']", (event) => {
   const { columnId, cardId } = event.currentTarget.dataset;
   state = deleteCardState(state, columnId, cardId);
-  $(`.card[data-card-id='${cardId}']`).remove();
+  $root.find(cardSelector(cardId)).remove();
   persist();
   syncCounts();
   syncEmptyState(columnId);
@@ -183,19 +223,23 @@ $root.on("click", "[data-action='delete']", (event) => {
 
 $root.on("click", "[data-action='move']", (event) => {
   const { columnId, cardId, direction } = event.currentTarget.dataset;
-  state = moveCardState(state, columnId, cardId, direction);
-  const targetColumnId = state.editing?.cardId === cardId ? state.editing.columnId : (
-    direction === "left"
-      ? COLUMN_ORDER[COLUMN_ORDER.indexOf(columnId) - 1]
-      : COLUMN_ORDER[COLUMN_ORDER.indexOf(columnId) + 1]
-  );
-  if (!targetColumnId) return;
-  const $card = $(`.card[data-card-id='${cardId}']`).detach();
+  const nextState = moveCardState(state, columnId, cardId, direction);
+  if (nextState === state) {
+    return;
+  }
+  state = nextState;
+  const targetColumnId =
+    state.editing?.cardId === cardId
+      ? state.editing.columnId
+      : moveDestination(columnId, direction);
+  if (!targetColumnId) {
+    return;
+  }
+  const $card = $root.find(cardSelector(cardId)).detach();
   updateCardControls($card, targetColumnId);
   const card = cardById(targetColumnId, cardId);
-  const filter = state.filter.trim().toLowerCase();
-  if (!filter || card.title.toLowerCase().includes(filter)) {
-    $(`.column[data-column-id='${targetColumnId}'] .cards`).children(".empty-state").remove().end().append($card);
+  if (isVisible(card)) {
+    cardsFor(targetColumnId).children(".empty-state").remove().end().append($card);
   }
   persist();
   syncCounts();
@@ -206,17 +250,19 @@ $root.on("click", "[data-action='move']", (event) => {
 $root.on("click", "[data-action='start-edit']", (event) => {
   const { columnId, cardId } = event.currentTarget.dataset;
   finishEdit(true);
-  state = startEditState(state, columnId, cardId);
-  const $title = $(event.currentTarget);
-  $title.replaceWith(
-    $("<input>", {
-      "data-action": "draft",
-      "data-column-id": columnId,
-      "data-card-id": cardId,
-      "aria-label": "Edit card title"
-    }).val(state.editing.draftTitle)
-  );
-  $(`input[data-card-id='${cardId}']`).trigger("focus");
+  const nextState = startEditState(state, columnId, cardId);
+  if (nextState === state) {
+    return;
+  }
+
+  state = nextState;
+  $(event.currentTarget).replaceWith(cardContent(columnId, cardById(columnId, cardId)));
+  const input = $root
+    .find(cardSelector(cardId))
+    .find("input[data-action='draft']")
+    .trigger("focus")
+    .get(0);
+  input?.select();
 });
 
 $root.on("input", "[data-action='draft']", (event) => {
@@ -230,31 +276,27 @@ $root.on("input", "[data-action='filter']", (event) => {
 
 function finishEdit(commit) {
   const editing = state.editing;
-  if (!editing) return;
+  if (!editing) {
+    return;
+  }
+  const previousColumns = state.columns;
   state = commit ? commitEditState(state) : cancelEditState(state);
   const card = cardById(editing.columnId, editing.cardId);
-  const $card = $(`.card[data-card-id='${editing.cardId}']`);
+  const $card = $root.find(cardSelector(editing.cardId));
   if (card) {
-    const filter = state.filter.trim().toLowerCase();
-    if (filter && !card.title.toLowerCase().includes(filter)) {
+    if (!isVisible(card)) {
       $card.remove();
       syncEmptyState(editing.columnId);
     } else {
-      $card.find("input[data-action='draft']").replaceWith(
-        $("<button>", {
-          type: "button",
-          class: "card-title card-title-button",
-          "data-action": "start-edit",
-          "data-column-id": editing.columnId,
-          "data-card-id": editing.cardId
-        }).text(card.title)
-      );
+      $card.find("input[data-action='draft']").replaceWith(cardContent(editing.columnId, card));
     }
   } else {
     $card.remove();
     syncEmptyState(editing.columnId);
   }
-  if (commit) persist();
+  if (commit && state.columns !== previousColumns) {
+    persist();
+  }
   syncCounts();
 }
 
@@ -262,8 +304,7 @@ $root.on("keydown", "[data-action='draft']", (event) => {
   if (event.key === "Enter") {
     event.preventDefault();
     finishEdit(true);
-  }
-  if (event.key === "Escape") {
+  } else if (event.key === "Escape") {
     event.preventDefault();
     finishEdit(false);
   }
@@ -274,7 +315,6 @@ $root.on("focusout", "[data-action='draft']", () => finishEdit(true));
 $root.on("click", "[data-action='reset']", () => {
   clearSavedBoard();
   state = resetState();
-  persist();
   renderShell();
 });
 

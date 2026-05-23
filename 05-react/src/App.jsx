@@ -1,11 +1,4 @@
-import { useEffect, useRef, useState } from "react";
-import {
-  COLUMN_ORDER,
-  COLUMN_TITLES,
-  clearSavedBoard,
-  loadState,
-  saveColumns
-} from "../../shared/seed.js";
+import { useEffect, useMemo, useRef, useState } from "react";
 import {
   addCardState,
   cancelEditState,
@@ -19,18 +12,71 @@ import {
   updateDraftState,
   visibleCards
 } from "../../shared/actions.js";
+import {
+  COLUMN_ORDER,
+  COLUMN_TITLES,
+  clearSavedBoard,
+  loadState,
+  saveColumns
+} from "../../shared/seed.js";
 
-export function App() {
+function useBoardState() {
   const [state, setState] = useState(loadState);
+  const isMounted = useRef(false);
+  const skipNextSave = useRef(false);
 
   useEffect(() => {
+    if (!isMounted.current) {
+      isMounted.current = true;
+      return;
+    }
+    if (skipNextSave.current) {
+      skipNextSave.current = false;
+      return;
+    }
     saveColumns(state.columns);
   }, [state.columns]);
 
-  function reset() {
-    clearSavedBoard();
-    setState(resetState());
-  }
+  const actions = useMemo(
+    () => ({
+      addCard(columnId, title) {
+        setState((current) => addCardState(current, columnId, title));
+      },
+      deleteCard(columnId, cardId) {
+        setState((current) => deleteCardState(current, columnId, cardId));
+      },
+      moveCard(columnId, cardId, direction) {
+        setState((current) => moveCardState(current, columnId, cardId, direction));
+      },
+      startEdit(columnId, cardId) {
+        setState((current) => startEditState(current, columnId, cardId));
+      },
+      updateDraft(title) {
+        setState((current) => updateDraftState(current, title));
+      },
+      commitEdit() {
+        setState(commitEditState);
+      },
+      cancelEdit() {
+        setState(cancelEditState);
+      },
+      setFilter(filter) {
+        setState((current) => setFilterState(current, filter));
+      },
+      reset() {
+        clearSavedBoard();
+        skipNextSave.current = true;
+        setState(resetState());
+      }
+    }),
+    []
+  );
+
+  return { state, actions };
+}
+
+export function App() {
+  const { state, actions } = useBoardState();
 
   return (
     <main className="app-shell">
@@ -46,37 +92,37 @@ export function App() {
           aria-label="Filter cards"
           placeholder="Filter cards"
           value={state.filter}
-          onChange={(event) => setState((current) => setFilterState(current, event.target.value))}
+          onChange={(event) => actions.setFilter(event.target.value)}
         />
         <span className="count-pill">{totalCount(state.columns)} total</span>
-        <button type="button" onClick={reset}>
+        <button type="button" onClick={actions.reset}>
           Reset
         </button>
       </section>
 
-      <Board state={state} setState={setState} />
+      <Board state={state} actions={actions} />
     </main>
   );
 }
 
-function Board({ state, setState }) {
+function Board({ state, actions }) {
   return (
     <section className="board">
       {COLUMN_ORDER.map((columnId) => (
-        <Column key={columnId} columnId={columnId} state={state} setState={setState} />
+        <Column key={columnId} columnId={columnId} state={state} actions={actions} />
       ))}
     </section>
   );
 }
 
-function Column({ columnId, state, setState }) {
+function Column({ columnId, state, actions }) {
   const cards = visibleCards(state, columnId);
 
   function addCard(event) {
     event.preventDefault();
     const form = event.currentTarget;
     const title = new FormData(form).get("title") ?? "";
-    setState((current) => addCardState(current, columnId, String(title)));
+    actions.addCard(columnId, String(title));
     form.reset();
   }
 
@@ -93,7 +139,7 @@ function Column({ columnId, state, setState }) {
       <div className="cards">
         {cards.length ? (
           cards.map((card) => (
-            <Card key={card.id} columnId={columnId} card={card} state={state} setState={setState} />
+            <Card key={card.id} columnId={columnId} card={card} state={state} actions={actions} />
           ))
         ) : (
           <div className="empty-state">No matching cards</div>
@@ -103,9 +149,8 @@ function Column({ columnId, state, setState }) {
   );
 }
 
-function Card({ columnId, card, state, setState }) {
-  const isEditing =
-    state.editing?.columnId === columnId && state.editing?.cardId === card.id;
+function Card({ columnId, card, state, actions }) {
+  const isEditing = state.editing?.columnId === columnId && state.editing?.cardId === card.id;
   const columnIndex = COLUMN_ORDER.indexOf(columnId);
 
   return (
@@ -113,15 +158,15 @@ function Card({ columnId, card, state, setState }) {
       {isEditing ? (
         <EditInput
           value={state.editing.draftTitle}
-          onChange={(title) => setState((current) => updateDraftState(current, title))}
-          onCommit={() => setState(commitEditState)}
-          onCancel={() => setState(cancelEditState)}
+          onChange={actions.updateDraft}
+          onCommit={actions.commitEdit}
+          onCancel={actions.cancelEdit}
         />
       ) : (
         <button
           type="button"
           className="card-title card-title-button"
-          onClick={() => setState((current) => startEditState(current, columnId, card.id))}
+          onClick={() => actions.startEdit(columnId, card.id)}
         >
           {card.title}
         </button>
@@ -130,21 +175,18 @@ function Card({ columnId, card, state, setState }) {
         <button
           type="button"
           disabled={columnIndex === 0}
-          onClick={() => setState((current) => moveCardState(current, columnId, card.id, "left"))}
+          onClick={() => actions.moveCard(columnId, card.id, "left")}
         >
           Left
         </button>
         <button
           type="button"
           disabled={columnIndex === COLUMN_ORDER.length - 1}
-          onClick={() => setState((current) => moveCardState(current, columnId, card.id, "right"))}
+          onClick={() => actions.moveCard(columnId, card.id, "right")}
         >
           Right
         </button>
-        <button
-          type="button"
-          onClick={() => setState((current) => deleteCardState(current, columnId, card.id))}
-        >
+        <button type="button" onClick={() => actions.deleteCard(columnId, card.id)}>
           Delete
         </button>
       </div>
@@ -160,6 +202,16 @@ function EditInput({ value, onChange, onCommit, onCancel }) {
     ref.current?.select();
   }, []);
 
+  function handleKeyDown(event) {
+    if (event.key === "Enter") {
+      event.preventDefault();
+      onCommit();
+    } else if (event.key === "Escape") {
+      event.preventDefault();
+      onCancel();
+    }
+  }
+
   return (
     <input
       ref={ref}
@@ -167,16 +219,7 @@ function EditInput({ value, onChange, onCommit, onCancel }) {
       value={value}
       onChange={(event) => onChange(event.target.value)}
       onBlur={onCommit}
-      onKeyDown={(event) => {
-        if (event.key === "Enter") {
-          event.preventDefault();
-          onCommit();
-        }
-        if (event.key === "Escape") {
-          event.preventDefault();
-          onCancel();
-        }
-      }}
+      onKeyDown={handleKeyDown}
     />
   );
 }

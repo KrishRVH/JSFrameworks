@@ -1,0 +1,17 @@
+{
+  "name": "jsframeworks",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "format": "biome format --write .",
+    "lint": "biome lint .",
+    "check": "biome check .",
+    "check:write": "biome check --write .",
+    "build": "bun run --cwd 05-react build && bun run --cwd 06-svelte build",
+    "build:react": "bun run --cwd 05-react build",
+    "build:svelte": "bun run --cwd 06-svelte build"
+  },
+  "devDependencies": {
+    "@biomejs/biome": "2.4.15"
+  }
+}

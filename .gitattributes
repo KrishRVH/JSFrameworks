@@ -1,0 +1,22 @@
+* text=auto eol=lf
+
+*.css text eol=lf
+*.html text eol=lf
+*.js text eol=lf diff=javascript
+*.jsx text eol=lf diff=javascript
+*.json text eol=lf
+*.md text eol=lf
+*.svelte text eol=lf
+*.svg text eol=lf
+*.lock text eol=lf
+
+*.gif binary
+*.ico binary
+*.jpg binary
+*.jpeg binary
+*.png binary
+*.webp binary
+*.avif binary
+
+*.woff binary
+*.woff2 binary

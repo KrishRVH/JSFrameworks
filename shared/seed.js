@@ -26,10 +26,7 @@ export function createCard(title) {
 
 export function cloneColumns(columns) {
   return Object.fromEntries(
-    COLUMN_ORDER.map((columnId) => [
-      columnId,
-      columns[columnId].map((card) => ({ ...card }))
-    ])
+    COLUMN_ORDER.map((columnId) => [columnId, columns[columnId].map((card) => ({ ...card }))])
   );
 }
 
@@ -37,14 +34,12 @@ export function isValidColumns(value) {
   return Boolean(
     value &&
       typeof value === "object" &&
-      COLUMN_ORDER.every((columnId) =>
-        Array.isArray(value[columnId]) &&
-        value[columnId].every(
-          (card) =>
-            card &&
-            typeof card.id === "string" &&
-            typeof card.title === "string"
-        )
+      COLUMN_ORDER.every(
+        (columnId) =>
+          Array.isArray(value[columnId]) &&
+          value[columnId].every(
+            (card) => card && typeof card.id === "string" && typeof card.title === "string"
+          )
       )
   );
 }
@@ -53,9 +48,11 @@ export function loadState() {
   const state = createSeedState();
   try {
     const raw = localStorage.getItem(STORAGE_KEY);
-    if (!raw) return state;
+    if (!raw) {
+      return state;
+    }
     const parsed = JSON.parse(raw);
-    const columns = parsed && parsed.columns ? parsed.columns : parsed;
+    const columns = parsed?.columns ? parsed.columns : parsed;
     if (isValidColumns(columns)) {
       state.columns = cloneColumns(columns);
     }
@@ -74,14 +71,15 @@ export function clearSavedBoard() {
 }
 
 export function columnForCard(columns, cardId) {
-  return COLUMN_ORDER.find((columnId) =>
-    columns[columnId].some((card) => card.id === cardId)
-  );
+  return COLUMN_ORDER.find((columnId) => columns[columnId].some((card) => card.id === cardId));
 }
 
 export function moveDestination(columnId, direction) {
   const index = COLUMN_ORDER.indexOf(columnId);
-  const offset = direction === "left" ? -1 : 1;
+  const offset = { left: -1, right: 1 }[direction];
+  if (index === -1 || !offset) {
+    return null;
+  }
   return COLUMN_ORDER[index + offset] ?? null;
 }
 

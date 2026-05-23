@@ -16,9 +16,9 @@ The goal is not “translate the same code 6 times.” The goal is to **force ea
 Keep these pins consistent across the rungs so the comparison is fair. These are **latest-as-of-writing references**, not a requirement to keep chasing latest releases after the exercise starts.
 
 * **jQuery:** 4.0.0 ([jQuery][1])
-* **React / React DOM:** 19.2.4 ([GitHub][2])
-* **Svelte:** 5.49.2 ([npm][3])
-* **Vite:** 7.3.1 ([npm][4])
+* **React / React DOM:** 19.2.6 ([GitHub][2])
+* **Svelte:** 5.55.9 ([npm][3])
+* **Vite:** 8.0.14 ([npm][4])
 * **Node requirement for Vite:** Node 20.19+ or 22.12+ ([vitejs][5])
 
 Svelte “Runes” primitives you’ll use:
@@ -347,7 +347,7 @@ Approach B acceptance:
 * Identity via keys
 * Side effects are explicit and constrained
 
-React / React DOM 19.2.4 is the pinned reference for this exercise. ([GitHub][2])
+React / React DOM 19.2.6 is the pinned reference for this exercise. ([GitHub][2])
 
 ### Idiomatic constraints
 
@@ -403,7 +403,7 @@ Structure it so React’s strengths are forced to appear:
 * Fine-grained updates without a “re-render everything” mental model
 * Explicit tools for: state, derived state, effects
 
-Svelte 5.49.2 is the pinned reference for this exercise. ([npm][3])
+Svelte 5.55.9 is the pinned reference for this exercise. ([npm][3])
 Runes you’ll use: `$state`, `$derived`, `$effect`, `$props`. ([Svelte][6])
 
 ### Idiomatic constraints

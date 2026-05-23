@@ -1,11 +1,4 @@
 import {
-  COLUMN_ORDER,
-  COLUMN_TITLES,
-  clearSavedBoard,
-  loadState,
-  saveColumns
-} from "../shared/seed.js";
-import {
   addCardState,
   cancelEditState,
   commitEditState,
@@ -18,88 +11,113 @@ import {
   updateDraftState,
   visibleCards
 } from "../shared/actions.js";
+import {
+  COLUMN_ORDER,
+  COLUMN_TITLES,
+  clearSavedBoard,
+  loadState,
+  saveColumns
+} from "../shared/seed.js";
 
 const root = document.querySelector("#app");
 let state = loadState();
 
+function closest(target, selector) {
+  return target instanceof Element ? target.closest(selector) : null;
+}
+
 function el(tag, attrs = {}, children = []) {
   const node = document.createElement(tag);
   for (const [key, value] of Object.entries(attrs)) {
-    if (key === "className") node.className = value;
-    else if (key === "text") node.textContent = value;
-    else if (key === "disabled") node.disabled = value;
-    else if (key === "value") node.value = value;
-    else node.setAttribute(key, value);
+    if (key === "className") {
+      node.className = value;
+    } else if (key === "text") {
+      node.textContent = value;
+    } else if (key === "disabled") {
+      node.disabled = value;
+    } else if (key === "value") {
+      node.value = value;
+    } else {
+      node.setAttribute(key, value);
+    }
   }
-  for (const child of children) node.append(child);
+  for (const child of children) {
+    node.append(child);
+  }
   return node;
 }
 
-function durable(nextState) {
+function cardAttrs(columnId, cardId) {
+  return { "data-column-id": columnId, "data-card-id": cardId };
+}
+
+function button(label, attrs = {}) {
+  return el("button", { type: "button", text: label, ...attrs });
+}
+
+function setState(nextState, persist = false) {
+  if (nextState === state) {
+    return;
+  }
+  const columnsChanged = nextState.columns !== state.columns;
   state = nextState;
-  saveColumns(state.columns);
+  if (persist && columnsChanged) {
+    saveColumns(state.columns);
+  }
   render();
+}
+
+function durable(nextState) {
+  setState(nextState, true);
 }
 
 function transient(nextState) {
-  state = nextState;
-  render();
+  setState(nextState);
+}
+
+function renderCardActions(columnId, cardId) {
+  const columnIndex = COLUMN_ORDER.indexOf(columnId);
+  const data = cardAttrs(columnId, cardId);
+
+  return el("div", { className: "card-actions" }, [
+    button("Left", {
+      ...data,
+      "data-action": "move",
+      "data-direction": "left",
+      disabled: columnIndex === 0
+    }),
+    button("Right", {
+      ...data,
+      "data-action": "move",
+      "data-direction": "right",
+      disabled: columnIndex === COLUMN_ORDER.length - 1
+    }),
+    button("Delete", { ...data, "data-action": "delete" })
+  ]);
 }
 
 function renderCard(columnId, card) {
-  const isEditing =
-    state.editing?.columnId === columnId && state.editing?.cardId === card.id;
+  const data = cardAttrs(columnId, card.id);
+  const isEditing = state.editing?.columnId === columnId && state.editing?.cardId === card.id;
   const content = isEditing
     ? el("input", {
+        ...data,
         "data-action": "draft",
-        "data-column-id": columnId,
-        "data-card-id": card.id,
         value: state.editing.draftTitle,
         "aria-label": "Edit card title"
       })
     : el("button", {
+        ...data,
         type: "button",
         className: "card-title card-title-button",
         text: card.title,
-        "data-action": "start-edit",
-        "data-column-id": columnId,
-        "data-card-id": card.id
+        "data-action": "start-edit"
       });
 
-  return el(
-    "article",
-    { className: "card", "data-card-id": card.id, "data-column-id": columnId },
-    [
-      content,
-      el("div", { className: "card-actions" }, [
-        el("button", {
-          type: "button",
-          text: "Left",
-          "data-action": "move",
-          "data-direction": "left",
-          "data-column-id": columnId,
-          "data-card-id": card.id,
-          disabled: COLUMN_ORDER.indexOf(columnId) === 0
-        }),
-        el("button", {
-          type: "button",
-          text: "Right",
-          "data-action": "move",
-          "data-direction": "right",
-          "data-column-id": columnId,
-          "data-card-id": card.id,
-          disabled: COLUMN_ORDER.indexOf(columnId) === COLUMN_ORDER.length - 1
-        }),
-        el("button", {
-          type: "button",
-          text: "Delete",
-          "data-action": "delete",
-          "data-column-id": columnId,
-          "data-card-id": card.id
-        })
-      ])
-    ]
-  );
+  return el("article", { className: "card", ...data }, [
+    content,
+    renderCardActions(columnId, card.id)
+  ]);
 }
 
 function renderColumn(columnId) {
@@ -155,19 +173,27 @@ function renderShell() {
 }
 
 function focusEditingInput() {
-  root.querySelector("input[data-action='draft']")?.focus();
+  const input = root.querySelector("input[data-action='draft']");
+  input?.focus();
+  input?.select();
 }
 
 function render() {
-  if (!root.querySelector(".board")) renderShell();
-  root.querySelector("[data-action='filter']").value = state.filter;
+  if (!root.querySelector(".board")) {
+    renderShell();
+  }
+  const board = root.querySelector(".board");
+  const filter = root.querySelector("[data-action='filter']");
+  filter.value = state.filter;
   root.querySelector(".count-pill").textContent = `${totalCount(state.columns)} total`;
-  root.querySelector(".board").replaceChildren(...COLUMN_ORDER.map(renderColumn));
+  board.replaceChildren(...COLUMN_ORDER.map(renderColumn));
 }
 
 root.addEventListener("submit", (event) => {
-  const form = event.target.closest("form[data-action='add']");
-  if (!form) return;
+  const form = closest(event.target, "form[data-action='add']");
+  if (!form) {
+    return;
+  }
   event.preventDefault();
   const title = new FormData(form).get("title") ?? "";
   durable(addCardState(state, form.dataset.columnId, String(title)));
@@ -175,41 +201,63 @@ root.addEventListener("submit", (event) => {
 });
 
 root.addEventListener("click", (event) => {
-  const target = event.target.closest("[data-action]");
-  if (!target) return;
-  const { action, columnId, cardId, direction } = target.dataset;
-  if (action === "delete") durable(deleteCardState(state, columnId, cardId));
-  if (action === "move") durable(moveCardState(state, columnId, cardId, direction));
-  if (action === "start-edit") {
-    transient(startEditState(state, columnId, cardId));
-    focusEditingInput();
+  const target = closest(event.target, "[data-action]");
+  if (!target) {
+    return;
   }
-  if (action === "reset") {
-    clearSavedBoard();
-    durable(resetState());
+  const { action, columnId, cardId, direction } = target.dataset;
+  switch (action) {
+    case "delete":
+      durable(deleteCardState(state, columnId, cardId));
+      break;
+    case "move":
+      durable(moveCardState(state, columnId, cardId, direction));
+      break;
+    case "start-edit":
+      transient(startEditState(state, columnId, cardId));
+      focusEditingInput();
+      break;
+    case "reset":
+      clearSavedBoard();
+      transient(resetState());
+      break;
   }
 });
 
 root.addEventListener("input", (event) => {
-  const action = event.target.dataset.action;
-  if (action === "filter") transient(setFilterState(state, event.target.value));
-  if (action === "draft") transient(updateDraftState(state, event.target.value));
+  const target = event.target;
+  if (!(target instanceof HTMLInputElement)) {
+    return;
+  }
+  switch (target.dataset.action) {
+    case "filter":
+      transient(setFilterState(state, target.value));
+      break;
+    case "draft":
+      transient(updateDraftState(state, target.value));
+      break;
+  }
 });
 
 root.addEventListener("keydown", (event) => {
-  if (event.target.dataset.action !== "draft") return;
+  const target = event.target;
+  if (!(target instanceof HTMLInputElement) || target.dataset.action !== "draft") {
+    return;
+  }
   if (event.key === "Enter") {
     event.preventDefault();
     durable(commitEditState(state));
-  }
-  if (event.key === "Escape") {
+  } else if (event.key === "Escape") {
     event.preventDefault();
     transient(cancelEditState(state));
   }
 });
 
 root.addEventListener("focusout", (event) => {
-  if (event.target.dataset.action === "draft") durable(commitEditState(state));
+  const target = event.target;
+  if (target instanceof HTMLInputElement && target.dataset.action === "draft") {
+    durable(commitEditState(state));
+  }
 });
 
 render();

@@ -1,11 +1,4 @@
 import {
-  COLUMN_ORDER,
-  COLUMN_TITLES,
-  clearSavedBoard,
-  loadState,
-  saveColumns
-} from "../shared/seed.js";
-import {
   addCardState,
   cancelEditState,
   commitEditState,
@@ -18,84 +11,95 @@ import {
   updateDraftState,
   visibleCards
 } from "../shared/actions.js";
+import {
+  COLUMN_ORDER,
+  COLUMN_TITLES,
+  clearSavedBoard,
+  loadState,
+  saveColumns
+} from "../shared/seed.js";
 
 const $ = window.jQuery;
 const $root = $("#app");
 let state = loadState();
 
-function durable(nextState) {
+function cardAttrs(columnId, cardId) {
+  return { "data-column-id": columnId, "data-card-id": cardId };
+}
+
+function $button(label, attrs = {}) {
+  return $("<button>", { type: "button", ...attrs }).text(label);
+}
+
+function setState(nextState, persist = false) {
+  if (nextState === state) {
+    return;
+  }
+  const columnsChanged = nextState.columns !== state.columns;
   state = nextState;
-  saveColumns(state.columns);
+  if (persist && columnsChanged) {
+    saveColumns(state.columns);
+  }
   render();
+}
+
+function durable(nextState) {
+  setState(nextState, true);
 }
 
 function transient(nextState) {
-  state = nextState;
-  render();
+  setState(nextState);
+}
+
+function cardActions(columnId, cardId) {
+  const columnIndex = COLUMN_ORDER.indexOf(columnId);
+  const data = cardAttrs(columnId, cardId);
+
+  return $("<div>", { class: "card-actions" }).append(
+    $button("Left", {
+      ...data,
+      "data-action": "move",
+      "data-direction": "left",
+      disabled: columnIndex === 0
+    }),
+    $button("Right", {
+      ...data,
+      "data-action": "move",
+      "data-direction": "right",
+      disabled: columnIndex === COLUMN_ORDER.length - 1
+    }),
+    $button("Delete", { ...data, "data-action": "delete" })
+  );
 }
 
 function cardNode(columnId, card) {
-  const isEditing =
-    state.editing?.columnId === columnId && state.editing?.cardId === card.id;
+  const data = cardAttrs(columnId, card.id);
+  const isEditing = state.editing?.columnId === columnId && state.editing?.cardId === card.id;
   const $content = isEditing
     ? $("<input>", {
+        ...data,
         "data-action": "draft",
-        "data-column-id": columnId,
-        "data-card-id": card.id,
         "aria-label": "Edit card title"
       }).val(state.editing.draftTitle)
     : $("<button>", {
+        ...data,
         type: "button",
         class: "card-title card-title-button",
-        "data-action": "start-edit",
-        "data-column-id": columnId,
-        "data-card-id": card.id
+        "data-action": "start-edit"
       }).text(card.title);
 
   return $("<article>", {
     class: "card",
-    "data-card-id": card.id,
-    "data-column-id": columnId
-  }).append(
-    $content,
-    $("<div>", { class: "card-actions" }).append(
-      $("<button>", {
-        type: "button",
-        text: "Left",
-        "data-action": "move",
-        "data-direction": "left",
-        "data-column-id": columnId,
-        "data-card-id": card.id,
-        disabled: COLUMN_ORDER.indexOf(columnId) === 0
-      }),
-      $("<button>", {
-        type: "button",
-        text: "Right",
-        "data-action": "move",
-        "data-direction": "right",
-        "data-column-id": columnId,
-        "data-card-id": card.id,
-        disabled: COLUMN_ORDER.indexOf(columnId) === COLUMN_ORDER.length - 1
-      }),
-      $("<button>", {
-        type: "button",
-        text: "Delete",
-        "data-action": "delete",
-        "data-column-id": columnId,
-        "data-card-id": card.id
-      })
-    )
-  );
+    ...data
+  }).append($content, cardActions(columnId, card.id));
 }
 
 function columnNode(columnId) {
   const cards = visibleCards(state, columnId);
-  const $cards = $("<div>", { class: "cards" });
-  if (cards.length) {
-    cards.forEach((card) => $cards.append(cardNode(columnId, card)));
-  } else {
-    $cards.append($("<div>", { class: "empty-state" }).text("No matching cards"));
-  }
+  const cardNodes = cards.length
+    ? cards.map((card) => cardNode(columnId, card))
+    : [$("<div>", { class: "empty-state" }).text("No matching cards")];
+
   return $("<section>", { class: "column", "data-column-id": columnId }).append(
     $("<header>", { class: "column-header" }).append(
       $("<h2>", { class: "column-title" }).text(COLUMN_TITLES[columnId]),
@@ -109,7 +113,7 @@ function columnNode(columnId) {
       }),
       $("<button>", { type: "submit", text: "Add" })
     ),
-    $cards
+    $("<div>", { class: "cards" }).append(cardNodes)
   );
 }
 
@@ -135,11 +139,14 @@ function renderShell() {
 }
 
 function focusEditingInput() {
-  $root.find("input[data-action='draft']").trigger("focus");
+  const input = $root.find("input[data-action='draft']").trigger("focus").get(0);
+  input?.select();
 }
 
 function render() {
-  if (!$root.find(".board").length) renderShell();
+  if (!$root.find(".board").length) {
+    renderShell();
+  }
   $root.find("[data-action='filter']").val(state.filter);
   $root.find(".count-pill").text(`${totalCount(state.columns)} total`);
   $root.find(".board").empty().append(COLUMN_ORDER.map(columnNode));
@@ -148,21 +155,29 @@ function render() {
 $root.on("submit", "form[data-action='add']", (event) => {
   event.preventDefault();
   const form = event.currentTarget;
-  durable(addCardState(state, form.dataset.columnId, String(new FormData(form).get("title") ?? "")));
+  durable(
+    addCardState(state, form.dataset.columnId, String(new FormData(form).get("title") ?? ""))
+  );
   form.reset();
 });
 
 $root.on("click", "[data-action]", (event) => {
   const { action, columnId, cardId, direction } = event.currentTarget.dataset;
-  if (action === "delete") durable(deleteCardState(state, columnId, cardId));
-  if (action === "move") durable(moveCardState(state, columnId, cardId, direction));
-  if (action === "start-edit") {
-    transient(startEditState(state, columnId, cardId));
-    focusEditingInput();
-  }
-  if (action === "reset") {
-    clearSavedBoard();
-    durable(resetState());
+  switch (action) {
+    case "delete":
+      durable(deleteCardState(state, columnId, cardId));
+      break;
+    case "move":
+      durable(moveCardState(state, columnId, cardId, direction));
+      break;
+    case "start-edit":
+      transient(startEditState(state, columnId, cardId));
+      focusEditingInput();
+      break;
+    case "reset":
+      clearSavedBoard();
+      transient(resetState());
+      break;
   }
 });
 
@@ -178,8 +193,7 @@ $root.on("keydown", "[data-action='draft']", (event) => {
   if (event.key === "Enter") {
     event.preventDefault();
     durable(commitEditState(state));
-  }
-  if (event.key === "Escape") {
+  } else if (event.key === "Escape") {
     event.preventDefault();
     transient(cancelEditState(state));
   }
