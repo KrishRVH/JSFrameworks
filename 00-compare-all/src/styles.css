@@ -1,0 +1,144 @@
+:root {
+  color-scheme: light;
+  font-family:
+    Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  color: #172033;
+  background: #f4f6f8;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+}
+
+button,
+a {
+  font: inherit;
+}
+
+button,
+a {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 2.25rem;
+  border: 1px solid #b7c1cf;
+  border-radius: 6px;
+  background: #ffffff;
+  color: #172033;
+  padding: 0.4rem 0.7rem;
+  text-decoration: none;
+}
+
+button {
+  cursor: pointer;
+}
+
+button:hover,
+a:hover {
+  border-color: #506178;
+  background: #f8fafc;
+}
+
+.compare-shell {
+  min-height: 100vh;
+  padding: 1.25rem;
+}
+
+.compare-header {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 1rem;
+  align-items: end;
+  margin: 0 auto 1rem;
+}
+
+.compare-header h1 {
+  margin: 0;
+  font-size: 1.85rem;
+  letter-spacing: 0;
+}
+
+.compare-header p {
+  max-width: 74rem;
+  margin: 0.35rem 0 0;
+  color: #526174;
+}
+
+.compare-actions,
+.panel-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.compare-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(32rem, 1fr));
+  gap: 1rem;
+}
+
+.compare-panel {
+  min-width: 0;
+  border: 1px solid #d3dbe6;
+  border-radius: 8px;
+  background: #ffffff;
+  overflow: hidden;
+}
+
+.panel-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 0.75rem;
+  border-bottom: 1px solid #d3dbe6;
+}
+
+.panel-header h2 {
+  margin: 0;
+  font-size: 1rem;
+  letter-spacing: 0;
+}
+
+.panel-header p {
+  margin: 0.15rem 0 0;
+  color: #64748b;
+  font-size: 0.9rem;
+}
+
+iframe {
+  display: block;
+  width: 100%;
+  height: 44rem;
+  border: 0;
+  background: #f7f5f0;
+}
+
+@media (max-width: 1100px) {
+  .compare-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 760px) {
+  .compare-shell {
+    padding: 0.75rem;
+  }
+
+  .compare-header {
+    grid-template-columns: 1fr;
+  }
+
+  .panel-header {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  iframe {
+    height: 42rem;
+  }
+}

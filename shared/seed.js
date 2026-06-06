@@ -8,6 +8,15 @@ export const COLUMN_TITLES = {
 
 export const STORAGE_KEY = "tiny-kanban:v1";
 
+function currentStorageKey() {
+  try {
+    const instance = new URLSearchParams(globalThis.location.search).get("kanbanInstance")?.trim();
+    return instance ? `${STORAGE_KEY}:${instance}` : STORAGE_KEY;
+  } catch {
+    return STORAGE_KEY;
+  }
+}
+
 export function createSeedState() {
   return {
     columns: {
@@ -26,10 +35,7 @@ export function createCard(title) {
 
 export function cloneColumns(columns) {
   return Object.fromEntries(
-    COLUMN_ORDER.map((columnId) => [
-      columnId,
-      columns[columnId].map((card) => ({ ...card }))
-    ])
+    COLUMN_ORDER.map((columnId) => [columnId, columns[columnId].map((card) => ({ ...card }))])
   );
 }
 
@@ -37,14 +43,12 @@ export function isValidColumns(value) {
   return Boolean(
     value &&
       typeof value === "object" &&
-      COLUMN_ORDER.every((columnId) =>
-        Array.isArray(value[columnId]) &&
-        value[columnId].every(
-          (card) =>
-            card &&
-            typeof card.id === "string" &&
-            typeof card.title === "string"
-        )
+      COLUMN_ORDER.every(
+        (columnId) =>
+          Array.isArray(value[columnId]) &&
+          value[columnId].every(
+            (card) => card && typeof card.id === "string" && typeof card.title === "string"
+          )
       )
   );
 }
@@ -52,12 +56,14 @@ export function isValidColumns(value) {
 export function loadState() {
   const state = createSeedState();
   try {
-    const raw = localStorage.getItem(STORAGE_KEY);
-    if (!raw) return state;
+    const raw = localStorage.getItem(currentStorageKey());
+    if (!raw) {
+      return state;
+    }
     const parsed = JSON.parse(raw);
-    const columns = parsed && parsed.columns ? parsed.columns : parsed;
+    const columns = parsed?.columns ? parsed.columns : parsed;
     if (isValidColumns(columns)) {
-      state.columns = cloneColumns(columns);
+      return { ...state, columns: cloneColumns(columns) };
     }
   } catch {
     return state;
@@ -66,25 +72,26 @@ export function loadState() {
 }
 
 export function saveColumns(columns) {
-  localStorage.setItem(STORAGE_KEY, JSON.stringify({ columns: cloneColumns(columns) }));
+  try {
+    localStorage.setItem(currentStorageKey(), JSON.stringify({ columns: cloneColumns(columns) }));
+  } catch {}
 }
 
 export function clearSavedBoard() {
-  localStorage.removeItem(STORAGE_KEY);
-}
-
-export function columnForCard(columns, cardId) {
-  return COLUMN_ORDER.find((columnId) =>
-    columns[columnId].some((card) => card.id === cardId)
-  );
+  try {
+    localStorage.removeItem(currentStorageKey());
+  } catch {}
 }
 
 export function moveDestination(columnId, direction) {
   const index = COLUMN_ORDER.indexOf(columnId);
-  const offset = direction === "left" ? -1 : 1;
+  const offset = { left: -1, right: 1 }[direction];
+  if (index === -1 || !offset) {
+    return null;
+  }
   return COLUMN_ORDER[index + offset] ?? null;
 }
 
 export function normalizeTitle(title) {
-  return title.trim();
+  return String(title).trim();
 }

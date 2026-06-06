@@ -1,3 +1,35 @@
+# Dependencies
 **/node_modules/
+
+# Build output
 **/dist/
 
+# Non-npm package manager files
+pnpm-lock.yaml
+yarn.lock
+
+# Logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# Local environment
+.env
+.env.*
+!.env.example
+
+# Tool caches and reports
+.cache/
+.parcel-cache/
+.svelte-kit/
+coverage/
+*.tsbuildinfo
+
+# Editor and OS files
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+.gstack/

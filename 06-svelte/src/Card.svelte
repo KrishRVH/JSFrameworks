@@ -1,50 +1,57 @@
 <script>
-  import { tick } from "svelte";
-  import { COLUMN_ORDER } from "../../shared/seed.js";
+import {
+  cancelEditState,
+  commitEditState,
+  deleteCardState,
+  isEditingCard,
+  moveCardState,
+  startEditState
+} from "../../shared/actions.js";
+import { COLUMN_ORDER } from "../../shared/seed.js";
 
-  let { columnId, card, appState, actions } = $props();
-  let inputElement = $state(null);
-  let columnIndex = $derived(COLUMN_ORDER.indexOf(columnId));
-  let isEditing = $derived(
-    appState.editing?.columnId === columnId && appState.editing?.cardId === card.id
-  );
+let { columnId, card, board = $bindable() } = $props();
+let inputElement = $state(null);
+let columnIndex = $derived(COLUMN_ORDER.indexOf(columnId));
+let isEditing = $derived(isEditingCard(board, columnId, card.id));
 
-  $effect(() => {
-    if (isEditing && inputElement) {
-      tick().then(() => {
-        inputElement?.focus();
-        inputElement?.select();
-      });
-    }
-  });
+$effect(() => {
+  inputElement?.focus();
+  inputElement?.select();
+});
 
-  function keyEdit(event) {
-    if (event.key === "Enter") {
-      event.preventDefault();
-      actions.commitEdit();
-    }
-    if (event.key === "Escape") {
-      event.preventDefault();
-      actions.cancelEdit();
-    }
+function commitEdit() {
+  board = commitEditState(board);
+}
+
+function cancelEdit() {
+  board = cancelEditState(board);
+}
+
+function handleEditKeydown(event) {
+  if (event.key === "Enter") {
+    event.preventDefault();
+    commitEdit();
+  } else if (event.key === "Escape") {
+    event.preventDefault();
+    cancelEdit();
   }
+}
 </script>
 
 <article class="card">
   {#if isEditing}
     <input
       bind:this={inputElement}
+      bind:value={board.editing.draftTitle}
       aria-label="Edit card title"
-      value={appState.editing.draftTitle}
-      oninput={(event) => actions.updateDraft(event.currentTarget.value)}
-      onblur={() => actions.commitEdit()}
-      onkeydown={keyEdit}
+      onblur={commitEdit}
+      onkeydown={handleEditKeydown}
     />
   {:else}
     <button
       type="button"
       class="card-title card-title-button"
-      onclick={() => actions.startEdit(columnId, card.id)}
+      onclick={() => (board = startEditState(board, columnId, card.id))}
     >
       {card.title}
     </button>
@@ -54,18 +61,18 @@
     <button
       type="button"
       disabled={columnIndex === 0}
-      onclick={() => actions.moveCard(columnId, card.id, "left")}
+      onclick={() => (board = moveCardState(board, columnId, card.id, "left"))}
     >
       Left
     </button>
     <button
       type="button"
       disabled={columnIndex === COLUMN_ORDER.length - 1}
-      onclick={() => actions.moveCard(columnId, card.id, "right")}
+      onclick={() => (board = moveCardState(board, columnId, card.id, "right"))}
     >
       Right
     </button>
-    <button type="button" onclick={() => actions.deleteCard(columnId, card.id)}>
+    <button type="button" onclick={() => (board = deleteCardState(board, columnId, card.id))}>
       Delete
     </button>
   </div>

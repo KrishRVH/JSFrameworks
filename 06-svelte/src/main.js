@@ -5,4 +5,3 @@ import App from "./App.svelte";
 mount(App, {
   target: document.querySelector("#app")
 });
-

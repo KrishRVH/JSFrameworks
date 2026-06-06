@@ -1,0 +1,30 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Implementation Comparison Harness</title>
+    <script type="module" src="./src/main.js"></script>
+  </head>
+  <body>
+    <main class="compare-shell">
+      <header class="compare-header">
+        <div>
+          <h1>Implementation Comparison Harness</h1>
+          <p>
+            Six implementations, one behavior contract. The point is to compare the user
+            experience first: users do not care how the board got there when the interaction is
+            good, even though the maintenance story changes a lot underneath.
+          </p>
+        </div>
+        <div class="compare-actions">
+          <button type="button" data-action="reload-all">Reload all</button>
+          <button type="button" data-action="reset-all">Reset all</button>
+        </div>
+      </header>
+
+      <section class="compare-grid" id="compare-grid" aria-label="Tiny Kanban implementations">
+      </section>
+    </main>
+  </body>
+</html>

@@ -1,0 +1,70 @@
+# Repository Guidelines
+
+Tiny Kanban is one app implemented six ways for comparison. Keep behavior aligned with
+`SPEC.md`; only the implementation style should differ.
+
+## Structure
+
+- `00-compare-all/`: lightweight Vite comparison harness for the six real implementations.
+- `01-vanilla-a-rerender/`, `02-vanilla-b-keyed-patch/`: static vanilla JS implementations.
+- `03-jquery-a-render-loop/`, `04-jquery-b-incremental/`: static jQuery implementations.
+- `05-react/`: React 19 Vite app, source in `05-react/src/`.
+- `06-svelte/`: Svelte 5 runes Vite app, source in `06-svelte/src/`.
+- `shared/`: shared CSS, seed/storage helpers, and framework-neutral state transitions.
+- `SPEC.md`: canonical behavior contract and learning ladder.
+
+## Tooling
+
+Use npm exclusively. The repo pins Node with `.node-version`, npm with `packageManager`, and
+exact installs with `.npmrc`.
+
+This is not an npm workspace. Install each package boundary separately:
+
+```sh
+npm install
+npm --prefix 00-compare-all install
+npm --prefix 05-react install
+npm --prefix 06-svelte install
+```
+
+Common commands from the repo root:
+
+```sh
+npm run check
+npm run check:write
+npm run lint
+npm run format
+npm run dev:compare
+npm run build
+npm run build:react
+npm run build:svelte
+npm run dev:react
+npm run dev:svelte
+```
+
+Static apps run with `python3 -m http.server` from the repo root, then open the numbered folder.
+
+## Code Rules
+
+- Use ES modules.
+- Let Biome own formatting and linting through the root `biome.json`.
+- Keep state transitions in `shared/actions.js`.
+- Keep storage, seed data, column constants, and title normalization in `shared/seed.js`.
+- Keep UI-specific code inside the numbered implementation folders.
+- Keep `00-compare-all/` as a minimal viewer; it should not duplicate Kanban app logic.
+- Treat card titles as plain text, never HTML.
+- Persist only durable board data: `columns`.
+- Do not change one implementation without checking whether `SPEC.md` requires the same behavior elsewhere.
+
+## Verification
+
+There is no permanent automated test suite. For framework changes, run `npm run build`; for
+broader changes, run `npm run check` too.
+
+Manual behavior checks should cover add, delete, move, edit commit/cancel, filter, reset,
+persistence, empty-title behavior, and the XSS text case from `SPEC.md`.
+
+## PR Notes
+
+Keep commits focused. PRs should state the behavior changed, implementations touched,
+verification performed, and include screenshots or screen recordings for visible UI changes.

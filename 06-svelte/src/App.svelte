@@ -1,62 +1,31 @@
 <script>
-  import {
-    COLUMN_ORDER,
-    clearSavedBoard,
-    loadState,
-    saveColumns
-  } from "../../shared/seed.js";
-  import {
-    addCardState,
-    cancelEditState,
-    commitEditState,
-    deleteCardState,
-    moveCardState,
-    resetState,
-    setFilterState,
-    startEditState,
-    totalCount,
-    updateDraftState
-  } from "../../shared/actions.js";
-  import Column from "./Column.svelte";
+import { resetState, totalCount } from "../../shared/actions.js";
+import { COLUMN_ORDER, clearSavedBoard, loadState, saveColumns } from "../../shared/seed.js";
+import Column from "./Column.svelte";
 
-  let state = $state(loadState());
-  let total = $derived(totalCount(state.columns));
+let state = $state(loadState());
+let total = $derived(totalCount(state.columns));
+let isMounted = false;
+let skipNextSave = false;
 
-  $effect(() => {
-    saveColumns(state.columns);
-  });
-
-  function reset() {
-    clearSavedBoard();
-    state = resetState();
+$effect(() => {
+  const columns = state.columns;
+  if (!isMounted) {
+    isMounted = true;
+    return;
   }
+  if (skipNextSave) {
+    skipNextSave = false;
+    return;
+  }
+  saveColumns(columns);
+});
 
-  const actions = {
-    addCard(columnId, title) {
-      state = addCardState(state, columnId, title);
-    },
-    deleteCard(columnId, cardId) {
-      state = deleteCardState(state, columnId, cardId);
-    },
-    moveCard(columnId, cardId, direction) {
-      state = moveCardState(state, columnId, cardId, direction);
-    },
-    startEdit(columnId, cardId) {
-      state = startEditState(state, columnId, cardId);
-    },
-    updateDraft(title) {
-      state = updateDraftState(state, title);
-    },
-    commitEdit() {
-      state = commitEditState(state);
-    },
-    cancelEdit() {
-      state = cancelEditState(state);
-    },
-    setFilter(text) {
-      state = setFilterState(state, text);
-    }
-  };
+function reset() {
+  clearSavedBoard();
+  skipNextSave = true;
+  state = resetState();
+}
 </script>
 
 <main class="app-shell">
@@ -68,19 +37,14 @@
   </header>
 
   <section class="toolbar">
-    <input
-      aria-label="Filter cards"
-      placeholder="Filter cards"
-      value={state.filter}
-      oninput={(event) => actions.setFilter(event.currentTarget.value)}
-    />
+    <input aria-label="Filter cards" placeholder="Filter cards" bind:value={state.filter} />
     <span class="count-pill">{total} total</span>
     <button type="button" onclick={reset}>Reset</button>
   </section>
 
   <section class="board">
     {#each COLUMN_ORDER as columnId (columnId)}
-      <Column {columnId} appState={state} {actions} />
+      <Column {columnId} bind:board={state} />
     {/each}
   </section>
 </main>

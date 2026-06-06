@@ -1,0 +1,25 @@
+{
+  "name": "jsframeworks",
+  "private": true,
+  "type": "module",
+  "packageManager": "npm@11.16.0",
+  "engines": {
+    "node": ">=26.3.0",
+    "npm": ">=11.16.0"
+  },
+  "scripts": {
+    "dev:compare": "npm --prefix 00-compare-all run dev",
+    "dev:react": "npm --prefix 05-react run dev",
+    "dev:svelte": "npm --prefix 06-svelte run dev",
+    "format": "biome format --write .",
+    "lint": "biome lint .",
+    "check": "biome check .",
+    "check:write": "biome check --write .",
+    "build": "npm run build:react && npm run build:svelte",
+    "build:react": "npm --prefix 05-react run build",
+    "build:svelte": "npm --prefix 06-svelte run build"
+  },
+  "devDependencies": {
+    "@biomejs/biome": "2.4.16"
+  }
+}
