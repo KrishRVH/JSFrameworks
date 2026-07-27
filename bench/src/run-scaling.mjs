@@ -1,11 +1,5 @@
 import { openRungPage, waitForBoot } from "./browser.mjs";
-import {
-  CPU_THROTTLE,
-  SCALING_ITERATIONS,
-  SCALING_OPS,
-  SCALING_SIZES,
-  rungs
-} from "./config.mjs";
+import { CPU_THROTTLE, SCALING_ITERATIONS, SCALING_OPS, SCALING_SIZES, rungs } from "./config.mjs";
 import { makeScenarios } from "./scenarios.mjs";
 import { makeBoard } from "./seed.mjs";
 import { summarize } from "./stats.mjs";
