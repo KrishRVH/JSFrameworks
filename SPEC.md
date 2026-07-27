@@ -98,6 +98,11 @@ JSFrameworks/
     package-lock.json
     package.json
     src/
+  bench/
+    package-lock.json
+    package.json
+    results/
+    src/
 ```
 
 `shared/styles.css` owns layout, typography, spacing, controls, and states.

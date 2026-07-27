@@ -18,7 +18,8 @@
     "bench:coldstart": "node src/run.mjs coldstart",
     "bench:conformance": "node src/run.mjs conformance",
     "bench:scaling": "node src/run.mjs scaling",
-    "report": "node src/run.mjs report"
+    "report": "node src/run.mjs report",
+    "media": "node src/export-media.mjs"
   },
   "dependencies": {
     "playwright-core": "1.62.0"

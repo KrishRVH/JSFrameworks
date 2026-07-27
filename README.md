@@ -173,6 +173,61 @@ checklist runs as a browser-driven conformance matrix, alongside memory and list
 `bench/results/`, and the self-contained report is written to `bench/report/index.html`.
 Methodology is in [bench/README.md](./bench/README.md).
 
+### Results at a glance
+
+Exported from the committed reference run (one machine; regenerate with `npm run bench`).
+The [full report](./bench/report/index.html) adds hover breakdowns and a data table under
+every chart.
+
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="./bench/report/media/write-ledger-dark.png">
+  <img alt="Heatmap of DOM writes per user action across the seven implementations" src="./bench/report/media/write-ledger-light.png">
+</picture>
+
+*DOM writes per user action on a 300-card board. A single-card change costs the render-loop
+rungs ~6,000 writes and the diffing or fine-grained rungs 3 to 34. Vanilla B is the twist:
+keyed reuse fixes focus but still re-stamps every attribute on every keystroke.*
+
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="./bench/report/media/amplification-dark.png">
+  <img alt="Log-scale bars of DOM writes spent committing a single card title" src="./bench/report/media/amplification-light.png">
+</picture>
+
+*Write amplification, log scale: one committed title costs Svelte and Solid 3 DOM writes,
+and the render-loop rungs thousands.*
+
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="./bench/report/media/scaling-dark.png">
+  <img alt="Latency versus board size line charts for boot, add, keystroke, commit, and filter" src="./bench/report/media/scaling-light.png">
+</picture>
+
+*Latency vs board size (log x). jQuery B's hand-targeted patches are the only structural
+updates that stay flat; framework reconciliation grows with N at a much smaller constant
+than full rebuilds; draft keystrokes hold at ~1 ms everywhere except React and vanilla B.*
+
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="./bench/report/media/workday-dark.png">
+  <img alt="Stacked bars of CPU time split into script, style recalc, and layout per implementation" src="./bench/report/media/workday-light.png">
+</picture>
+
+*The same 110-action editing session on every rung: rebuild strategies pay in layout,
+reconciliation pays in script, and the targeted-update rungs barely pay at all.*
+
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="./bench/report/media/coldstart-dark.png">
+  <img alt="Stacked bars of cold-start time split into HTML, JS transfer, and render segments" src="./bench/report/media/coldstart-light.png">
+</picture>
+
+*Cold start on emulated Fast 3G. Shipped bytes become felt time - and the jQuery rungs'
+two-request waterfall costs more transfer time than React's single 62 kB bundle.*
+
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="./bench/report/media/author-vs-user-dark.png">
+  <img alt="Scatter plot of authored source lines against shipped gzip kilobytes" src="./bench/report/media/author-vs-user-light.png">
+</picture>
+
+*Author cost vs user cost: what you write against what your users download.*
+
 ## Learning Focus
 
 Use the implementations to compare:

@@ -69,3 +69,7 @@ Individual phases: `npm --prefix bench run bench:churn` (also `timing`, `memory`
 
 Results land in `bench/results/*.json`; the self-contained report (inline SVG, light
 and dark, no external assets) is written to `bench/report/index.html`.
+
+`npm --prefix bench run media` exports the charts the root README embeds
+(`report/media/*.png`, light and dark). Re-run it after regenerating the report so the
+committed images match the committed results.
