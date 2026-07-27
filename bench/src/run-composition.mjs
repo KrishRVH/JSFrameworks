@@ -4,6 +4,7 @@ import { join } from "node:path";
 
 import { repoRoot, rungs } from "./config.mjs";
 
+// biome-ignore lint/security/noSecrets: the standard base64 alphabet, not a secret
 const B64 = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
 
 function decodeSegment(segment) {
