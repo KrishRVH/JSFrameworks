@@ -236,7 +236,9 @@ $root.on("click", "[data-action='move']", (event) => {
   updateCardControls($card, targetColumnId);
   const card = cardById(targetColumnId, cardId);
   if (isVisible(card)) {
-    cardsFor(targetColumnId).children(".empty-state").remove().end().append($card);
+    const $cards = cardsFor(targetColumnId);
+    $cards.children(".empty-state").remove();
+    $cards.append($card);
   }
   persist();
   syncCounts();

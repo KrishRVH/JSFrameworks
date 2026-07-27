@@ -1,38 +1,6 @@
 import { STORAGE_KEY } from "../../shared/seed.js";
+import { implementations } from "./implementations.js";
 import "./styles.css";
-
-const implementations = [
-  {
-    id: "vanilla-a",
-    name: "Vanilla A",
-    detail: "Naive re-render"
-  },
-  {
-    id: "vanilla-b",
-    name: "Vanilla B",
-    detail: "Keyed patch"
-  },
-  {
-    id: "jquery-a",
-    name: "jQuery A",
-    detail: "Render loop"
-  },
-  {
-    id: "jquery-b",
-    name: "jQuery B",
-    detail: "Incremental DOM updates"
-  },
-  {
-    id: "react",
-    name: "React",
-    detail: "Declarative components"
-  },
-  {
-    id: "svelte",
-    name: "Svelte",
-    detail: "Runes reactivity"
-  }
-];
 
 function harnessUrl(id) {
   const params = new URLSearchParams({

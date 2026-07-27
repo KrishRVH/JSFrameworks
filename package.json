@@ -11,15 +11,17 @@
     "dev:compare": "npm --prefix 00-compare-all run dev",
     "dev:react": "npm --prefix 05-react run dev",
     "dev:svelte": "npm --prefix 06-svelte run dev",
+    "dev:solid": "npm --prefix 07-solid run dev",
     "format": "biome format --write .",
     "lint": "biome lint .",
     "check": "biome check .",
     "check:write": "biome check --write .",
-    "build": "npm run build:react && npm run build:svelte",
+    "build": "npm run build:react && npm run build:svelte && npm run build:solid",
     "build:react": "npm --prefix 05-react run build",
-    "build:svelte": "npm --prefix 06-svelte run build"
+    "build:svelte": "npm --prefix 06-svelte run build",
+    "build:solid": "npm --prefix 07-solid run build"
   },
   "devDependencies": {
-    "@biomejs/biome": "2.4.16"
+    "@biomejs/biome": "2.5.5"
   }
 }

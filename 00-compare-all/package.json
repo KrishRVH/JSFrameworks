@@ -11,11 +11,13 @@
     "dev": "vite --host 127.0.0.1"
   },
   "devDependencies": {
-    "@sveltejs/vite-plugin-svelte": "7.1.2",
-    "@vitejs/plugin-react": "6.0.2",
-    "react": "19.2.7",
-    "react-dom": "19.2.7",
-    "svelte": "5.56.2",
-    "vite": "8.0.16"
+    "@sveltejs/vite-plugin-svelte": "7.2.0",
+    "@vitejs/plugin-react": "6.0.4",
+    "react": "19.2.8",
+    "react-dom": "19.2.8",
+    "solid-js": "1.9.14",
+    "svelte": "5.56.8",
+    "vite": "8.1.5",
+    "vite-plugin-solid": "2.11.14"
   }
 }

@@ -1,16 +1,16 @@
 <script>
-import { addCardState, visibleCards } from "../../shared/actions.js";
+import { visibleCards } from "../../shared/actions.js";
 import { COLUMN_TITLES } from "../../shared/seed.js";
+import { actions, board } from "./board.svelte.js";
 import Card from "./Card.svelte";
 
-let { columnId, board = $bindable() } = $props();
+let { columnId } = $props();
 let cards = $derived(visibleCards(board, columnId));
 
 function addCard(event) {
   event.preventDefault();
   const form = event.currentTarget;
-  const title = new FormData(form).get("title") ?? "";
-  board = addCardState(board, columnId, String(title));
+  actions.addCard(columnId, String(new FormData(form).get("title") ?? ""));
   form.reset();
 }
 </script>
@@ -29,7 +29,7 @@ function addCard(event) {
   <div class="cards">
     {#if cards.length}
       {#each cards as card (card.id)}
-        <Card {columnId} {card} bind:board />
+        <Card {columnId} {card} />
       {/each}
     {:else}
       <div class="empty-state">No matching cards</div>

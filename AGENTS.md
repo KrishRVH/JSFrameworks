@@ -1,15 +1,16 @@
 # Repository Guidelines
 
-Tiny Kanban is one app implemented six ways for comparison. Keep behavior aligned with
+Tiny Kanban is one app implemented seven ways for comparison. Keep behavior aligned with
 `SPEC.md`; only the implementation style should differ.
 
 ## Structure
 
-- `00-compare-all/`: lightweight Vite comparison harness for the six real implementations.
+- `00-compare-all/`: lightweight Vite comparison harness for the seven real implementations.
 - `01-vanilla-a-rerender/`, `02-vanilla-b-keyed-patch/`: static vanilla JS implementations.
 - `03-jquery-a-render-loop/`, `04-jquery-b-incremental/`: static jQuery implementations.
 - `05-react/`: React 19 Vite app, source in `05-react/src/`.
 - `06-svelte/`: Svelte 5 runes Vite app, source in `06-svelte/src/`.
+- `07-solid/`: SolidJS Vite app, source in `07-solid/src/`.
 - `shared/`: shared CSS, seed/storage helpers, and framework-neutral state transitions.
 - `SPEC.md`: canonical behavior contract and learning ladder.
 
@@ -25,6 +26,7 @@ npm install
 npm --prefix 00-compare-all install
 npm --prefix 05-react install
 npm --prefix 06-svelte install
+npm --prefix 07-solid install
 ```
 
 Common commands from the repo root:
@@ -38,8 +40,10 @@ npm run dev:compare
 npm run build
 npm run build:react
 npm run build:svelte
+npm run build:solid
 npm run dev:react
 npm run dev:svelte
+npm run dev:solid
 ```
 
 Static apps run with `python3 -m http.server` from the repo root, then open the numbered folder.
@@ -48,7 +52,9 @@ Static apps run with `python3 -m http.server` from the repo root, then open the 
 
 - Use ES modules.
 - Let Biome own formatting and linting through the root `biome.json`.
-- Keep state transitions in `shared/actions.js`.
+- Keep state transitions in `shared/actions.js`. Exception: the Svelte and Solid rungs
+  express their transitions natively (deep `$state` proxy mutation and store primitives, see
+  `SPEC.md`) while reusing the shared read and persistence helpers.
 - Keep storage, seed data, column constants, and title normalization in `shared/seed.js`.
 - Keep UI-specific code inside the numbered implementation folders.
 - Keep `00-compare-all/` as a minimal viewer; it should not duplicate Kanban app logic.

@@ -1,5 +1,5 @@
 {
-  "name": "tiny-kanban-svelte",
+  "name": "tiny-kanban-solid",
   "private": true,
   "type": "module",
   "packageManager": "npm@11.16.0",
@@ -12,9 +12,11 @@
     "build": "vite build",
     "preview": "vite preview --host 127.0.0.1"
   },
+  "dependencies": {
+    "solid-js": "1.9.14"
+  },
   "devDependencies": {
-    "@sveltejs/vite-plugin-svelte": "7.2.0",
-    "svelte": "5.56.8",
-    "vite": "8.1.5"
+    "vite": "8.1.5",
+    "vite-plugin-solid": "2.11.14"
   }
 }

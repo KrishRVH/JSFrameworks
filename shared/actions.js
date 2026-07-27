@@ -21,15 +21,19 @@ function replaceCard(columns, columnId, cardId, updater) {
   };
 }
 
+export function insertCardState(state, columnId, card) {
+  return withColumns(state, {
+    ...state.columns,
+    [columnId]: [...state.columns[columnId], card]
+  });
+}
+
 export function addCardState(state, columnId, title) {
   const normalized = normalizeTitle(title);
   if (!normalized) {
     return state;
   }
-  return withColumns(state, {
-    ...state.columns,
-    [columnId]: [...state.columns[columnId], createCard(normalized)]
-  });
+  return insertCardState(state, columnId, createCard(normalized));
 }
 
 export function deleteCardState(state, columnId, cardId) {

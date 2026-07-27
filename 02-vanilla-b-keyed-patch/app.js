@@ -53,6 +53,20 @@ function setCardDataset(node, columnId, cardId) {
   node.dataset.cardId = cardId;
 }
 
+// replaceChildren would detach every child before re-inserting it, which resets focus
+// and selection even for reused nodes. Only move nodes whose position actually changed.
+function syncChildren(parent, nodes) {
+  nodes.forEach((node, index) => {
+    const current = parent.children[index];
+    if (current !== node) {
+      parent.insertBefore(node, current ?? null);
+    }
+  });
+  while (parent.children.length > nodes.length) {
+    parent.lastElementChild.remove();
+  }
+}
+
 function setState(nextState, persist = false) {
   if (nextState === state) {
     return;
@@ -118,7 +132,7 @@ function cardContent(columnId, card, existingContent) {
 function renderCardActions(node, columnId, cardId) {
   const columnIndex = COLUMN_ORDER.indexOf(columnId);
   const actions = node.querySelector(".card-actions") ?? el("div", { className: "card-actions" });
-  actions.replaceChildren(
+  syncChildren(actions, [
     actionButton(actions.querySelector("[data-direction='left']"), {
       label: "Left",
       action: "move",
@@ -141,7 +155,7 @@ function renderCardActions(node, columnId, cardId) {
       columnId,
       cardId
     })
-  );
+  ]);
   if (!actions.parentElement) {
     node.append(actions);
   }
@@ -171,38 +185,34 @@ function renderCard(columnId, card, existingCard = null) {
   return node;
 }
 
-function renderColumn(columnId, existing = null, oldCards = new Map()) {
-  const column =
-    existing ??
-    el("section", { className: "column", "data-column-id": columnId }, [
-      el("header", { className: "column-header" }),
-      el("form", { className: "add-form", "data-action": "add", "data-column-id": columnId }),
-      el("div", { className: "cards" })
-    ]);
-  column.querySelector(".column-header").replaceChildren(
-    el("h2", { className: "column-title", text: COLUMN_TITLES[columnId] }),
-    el("span", {
-      className: "column-count",
-      text: `${state.columns[columnId].length} cards`
-    })
-  );
-  const form = column.querySelector(".add-form");
-  if (!form.childElementCount) {
-    form.replaceChildren(
+function createColumn(columnId) {
+  return el("section", { className: "column", "data-column-id": columnId }, [
+    el("header", { className: "column-header" }, [
+      el("h2", { className: "column-title", text: COLUMN_TITLES[columnId] }),
+      el("span", { className: "column-count" })
+    ]),
+    el("form", { className: "add-form", "data-action": "add", "data-column-id": columnId }, [
       el("input", {
         name: "title",
         placeholder: `Add to ${COLUMN_TITLES[columnId]}`,
         autocomplete: "off"
       }),
       el("button", { type: "submit", text: "Add" })
-    );
-  }
+    ]),
+    el("div", { className: "cards" })
+  ]);
+}
+
+function renderColumn(columnId, existing = null, oldCards = new Map()) {
+  const column = existing ?? createColumn(columnId);
+  column.querySelector(".column-count").textContent = `${state.columns[columnId].length} cards`;
   const cardsRoot = column.querySelector(".cards");
   const cards = visibleCards(state, columnId);
-  cardsRoot.replaceChildren(
-    ...(cards.length
+  syncChildren(
+    cardsRoot,
+    cards.length
       ? cards.map((card) => renderCard(columnId, card, oldCards.get(card.id)))
-      : [el("div", { className: "empty-state", text: "No matching cards" })])
+      : [el("div", { className: "empty-state", text: "No matching cards" })]
   );
   return column;
 }
@@ -249,8 +259,9 @@ function render() {
   );
   filter.value = state.filter;
   root.querySelector(".count-pill").textContent = `${totalCount(state.columns)} total`;
-  board.replaceChildren(
-    ...COLUMN_ORDER.map((columnId) => renderColumn(columnId, oldColumns.get(columnId), oldCards))
+  syncChildren(
+    board,
+    COLUMN_ORDER.map((columnId) => renderColumn(columnId, oldColumns.get(columnId), oldCards))
   );
 }
 

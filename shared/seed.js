@@ -61,9 +61,8 @@ export function loadState() {
       return state;
     }
     const parsed = JSON.parse(raw);
-    const columns = parsed?.columns ? parsed.columns : parsed;
-    if (isValidColumns(columns)) {
-      return { ...state, columns: cloneColumns(columns) };
+    if (isValidColumns(parsed?.columns)) {
+      return { ...state, columns: cloneColumns(parsed.columns) };
     }
   } catch {
     return state;
@@ -71,6 +70,8 @@ export function loadState() {
   return state;
 }
 
+// Storage can be unavailable (private mode, blocked third-party frames, quota); the
+// board deliberately keeps working without persistence rather than surfacing errors.
 export function saveColumns(columns) {
   try {
     localStorage.setItem(currentStorageKey(), JSON.stringify({ columns: cloneColumns(columns) }));

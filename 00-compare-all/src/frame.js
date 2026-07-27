@@ -1,50 +1,18 @@
+import { implementations } from "./implementations.js";
+
 const repoRoot = import.meta.env.VITE_REPO_ROOT;
 
-const implementations = {
-  "vanilla-a": {
-    title: "Tiny Kanban - Vanilla A",
-    mount: "app",
-    entry: "01-vanilla-a-rerender/app.js",
-    sharedStyles: true
-  },
-  "vanilla-b": {
-    title: "Tiny Kanban - Vanilla B",
-    mount: "app",
-    entry: "02-vanilla-b-keyed-patch/app.js",
-    sharedStyles: true
-  },
-  "jquery-a": {
-    title: "Tiny Kanban - jQuery A",
-    mount: "app",
-    entry: "03-jquery-a-render-loop/app.js",
-    jquery: true,
-    sharedStyles: true
-  },
-  "jquery-b": {
-    title: "Tiny Kanban - jQuery B",
-    mount: "app",
-    entry: "04-jquery-b-incremental/app.js",
-    jquery: true,
-    sharedStyles: true
-  },
-  react: {
-    title: "Tiny Kanban - React",
-    mount: "root",
-    entry: "05-react/src/main.jsx"
-  },
-  svelte: {
-    title: "Tiny Kanban - Svelte",
-    mount: "app",
-    entry: "06-svelte/src/main.js"
-  }
-};
+const JQUERY_SRC = "https://code.jquery.com/jquery-4.0.0.min.js";
+// biome-ignore lint/security/noSecrets: public subresource-integrity hash, not a secret
+const JQUERY_INTEGRITY = "sha384-fgGyf7Mo7DURSOMnOy7ed+dkq5Job205Gnzu6QIg0BOHKaqt4D76Dt8VlDCzcMHV";
 
 function fsUrl(path) {
   return `/@fs/${repoRoot}/${path}`;
 }
 
 function implementationFromUrl() {
-  return new URLSearchParams(globalThis.location.search).get("implementation") ?? "";
+  const id = new URLSearchParams(globalThis.location.search).get("implementation") ?? "";
+  return implementations.find((implementation) => implementation.id === id);
 }
 
 function showError(message) {
@@ -62,18 +30,19 @@ function addSharedStyles() {
   document.head.append(link);
 }
 
-function prepareMount(id) {
-  const element =
-    id === "app"
-      ? Object.assign(document.createElement("main"), { id, className: "app-shell" })
-      : Object.assign(document.createElement("div"), { id });
+function prepareMount({ mount, shell }) {
+  const element = shell
+    ? Object.assign(document.createElement("main"), { id: mount, className: "app-shell" })
+    : Object.assign(document.createElement("div"), { id: mount });
   document.body.replaceChildren(element);
 }
 
-function loadScript(src) {
+function loadScript(src, integrity) {
   return new Promise((resolve, reject) => {
     const script = document.createElement("script");
     script.src = src;
+    script.integrity = integrity;
+    script.crossOrigin = "anonymous";
     script.addEventListener("load", resolve, { once: true });
     script.addEventListener("error", reject, { once: true });
     document.head.append(script);
@@ -81,7 +50,7 @@ function loadScript(src) {
 }
 
 async function boot() {
-  const implementation = implementations[implementationFromUrl()];
+  const implementation = implementationFromUrl();
   if (!implementation) {
     showError("Unknown Tiny Kanban implementation.");
     return;
@@ -91,15 +60,16 @@ async function boot() {
   if (implementation.sharedStyles) {
     addSharedStyles();
   }
-  prepareMount(implementation.mount);
+  prepareMount(implementation);
   if (implementation.jquery) {
-    await loadScript("https://code.jquery.com/jquery-4.0.0.min.js");
+    await loadScript(JQUERY_SRC, JQUERY_INTEGRITY);
   }
   await import(/* @vite-ignore */ fsUrl(implementation.entry));
 }
 
 try {
   await boot();
-} catch {
+} catch (error) {
+  console.error(error);
   showError("Unable to load this Tiny Kanban implementation.");
 }

@@ -1,10 +1,10 @@
 import { useEffect, useReducer, useRef } from "react";
 
 import {
-  addCardState,
   cancelEditState,
   commitEditState,
   deleteCardState,
+  insertCardState,
   isEditingCard,
   moveCardState,
   resetState,
@@ -18,14 +18,18 @@ import {
   COLUMN_ORDER,
   COLUMN_TITLES,
   clearSavedBoard,
+  createCard,
   loadState,
+  normalizeTitle,
   saveColumns
 } from "../../shared/seed.js";
 
+// Reducers must stay pure, so card identity is minted in the event handler and
+// arrives fully formed in the action.
 function boardReducer(state, action) {
   switch (action.type) {
     case "cardAdded":
-      return addCardState(state, action.columnId, action.title);
+      return insertCardState(state, action.columnId, action.card);
     case "cardDeleted":
       return deleteCardState(state, action.columnId, action.cardId);
     case "cardMoved":
@@ -116,12 +120,11 @@ function Board({ state, dispatch }) {
 function Column({ columnId, state, dispatch }) {
   const cards = visibleCards(state, columnId);
 
-  function addCard(event) {
-    event.preventDefault();
-    const form = event.currentTarget;
-    const title = new FormData(form).get("title") ?? "";
-    dispatch({ type: "cardAdded", columnId, title: String(title) });
-    form.reset();
+  function addCard(formData) {
+    const title = normalizeTitle(formData.get("title") ?? "");
+    if (title) {
+      dispatch({ type: "cardAdded", columnId, card: createCard(title) });
+    }
   }
 
   return (
@@ -130,7 +133,7 @@ function Column({ columnId, state, dispatch }) {
         <h2 className="column-title">{COLUMN_TITLES[columnId]}</h2>
         <span className="column-count">{state.columns[columnId].length} cards</span>
       </header>
-      <form className="add-form" onSubmit={addCard}>
+      <form className="add-form" action={addCard}>
         <input name="title" placeholder={`Add to ${COLUMN_TITLES[columnId]}`} autoComplete="off" />
         <button type="submit">Add</button>
       </form>

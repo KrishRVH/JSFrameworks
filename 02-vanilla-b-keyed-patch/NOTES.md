@@ -3,4 +3,7 @@
 * Hard: preserving one editing input needs explicit identity bookkeeping.
 * Easier: most of Phase A render code stays useful.
 * New bug class: keyed preservation must still update metadata, disabled states, counts, and filtered lists.
+* Subtlety: reusing a node is not enough - `replaceChildren` detaches even reused children,
+  which resets focus and (in Chromium) fires a focusout that commits the draft mid-keystroke.
+  The render must move only the nodes whose position changed (`syncChildren`).
 

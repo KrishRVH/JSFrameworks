@@ -1,6 +1,6 @@
 # Tiny Kanban Spec
 
-Tiny Kanban is one app implemented as six comparable artifacts:
+Tiny Kanban is one app implemented as seven comparable artifacts:
 
 1. Vanilla JS, Phase A: naive re-render
 2. Vanilla JS, Phase B: keyed patch
@@ -8,15 +8,16 @@ Tiny Kanban is one app implemented as six comparable artifacts:
 4. jQuery, Approach B: incremental DOM updates
 5. React
 6. Svelte 5 with runes
+7. SolidJS
 
-The goal is not to translate the same code six times. The goal is to force each
+The goal is not to translate the same code seven times. The goal is to force each
 rung to be idiomatic, so the comparison shows why people reach for each approach.
 
 All rungs must follow the same behavioral spec and app-visible state shape. Only
 the implementation style changes.
 
-`00-compare-all/` is the Implementation Comparison Harness. It is a lightweight viewer for the six
-artifacts, not a seventh rung.
+`00-compare-all/` is the Implementation Comparison Harness. It is a lightweight viewer for the
+seven artifacts, not an eighth rung.
 
 ## Tooling And Version Pins
 
@@ -25,10 +26,11 @@ Keep these pins consistent across the rungs so the comparison is fair:
 - Node: `26.3.0`
 - npm: `11.16.0`
 - jQuery: `4.0.0`
-- React / React DOM: `19.2.7`
-- Svelte: `5.56.2`
-- Vite: `8.0.16`
-- Biome: `2.4.16`
+- React / React DOM: `19.2.8`
+- Svelte: `5.56.8`
+- Solid (`solid-js`): `1.9.14`
+- Vite: `8.1.5`
+- Biome: `2.5.5`
 
 Vite's own minimum Node requirement is lower than this repo's runtime pin, but
 this reference implementation intentionally targets the latest Node current
@@ -37,10 +39,18 @@ npx only for one-off tools that are not already installed as package scripts.
 
 Svelte runes primitives used in this exercise:
 
-- `$state`
+- `$state`, including module-level rune state in a `.svelte.js` file
 - `$derived`
 - `$effect`
 - `$props`
+- `{@attach ...}` for element-scoped DOM work
+
+Solid primitives used in this exercise:
+
+- `createStore`, with path setters, filter-function paths, `produce`, and `batch`
+- `createEffect` with `on(..., { defer: true })`
+- `<For>` and `<Show>`
+- `onMount` with a `ref`
 
 ## Repository Structure
 
@@ -84,6 +94,10 @@ JSFrameworks/
     package-lock.json
     package.json
     src/
+  07-solid/
+    package-lock.json
+    package.json
+    src/
 ```
 
 `shared/styles.css` owns layout, typography, spacing, controls, and states.
@@ -93,7 +107,12 @@ drift contaminates the comparison.
 
 `shared/seed.js` owns seed data, storage helpers, column constants, and title
 normalization helpers. `shared/actions.js` owns framework-neutral state
-transitions.
+transitions and read helpers. Rungs whose idiom is immutable updates (vanilla,
+jQuery, React) delegate board mutations to these transitions. The Svelte and
+Solid rungs reuse the read helpers and `shared/seed.js`, but express their
+transitions natively - deep `$state` proxy mutation in Svelte, store path
+setters and `produce` in Solid - because fine-grained mutation is the idiom
+each of those frameworks showcases; the behavioral rules stay identical.
 
 ## Shared Constraints
 
@@ -126,7 +145,8 @@ Cards:
 
 Board utilities:
 
-- Filter cards whose title contains the filter text, case-insensitively.
+- Filter cards whose title contains the trimmed filter text, case-insensitively.
+  A whitespace-only filter shows everything.
 - Persist durable board data to `localStorage`.
 - Reset clears storage and restores seed data.
 - Show per-column counts and total count.
@@ -218,6 +238,8 @@ Action rules:
 ## Persistence Rules
 
 - Storage key: `tiny-kanban:v1`
+- Storage payload shape: `{ "columns": { todo, doing, done } }`. Loaders validate
+  this shape and fall back to seed data on anything else.
 - Persist only durable board data: `columns`.
 - Do not persist session UI state: `filter` or `editing`.
 - On app load, start from `createSeedState()`.
@@ -365,6 +387,10 @@ Idiomatic constraints:
 
 - Use function components.
 - Use `useReducer` when named board actions read better than many setters.
+- Keep the reducer pure: mint card identity in the event handler and pass the
+  finished card in the action, so StrictMode double-invocation is a no-op.
+- Use React 19 form actions for the add form; the action receives `FormData`
+  and React resets the uncontrolled form afterward.
 - Compute derived values from state; do not store filtered lists in state.
 - Use `useEffect` for persistence only.
 - Use stable keys, such as `card.id`, when mapping lists.
@@ -421,40 +447,56 @@ What you are learning:
 
 Idiomatic constraints:
 
-- Create state with `$state(...)`.
+- Keep board state in a module-level `$state(...)` inside `board.svelte.js`,
+  exported alongside intent-named actions that mutate the deep proxy directly:
+  `board.columns[columnId].push(createCard(title))`, `cards.splice(index, 1)`,
+  `card.title = normalized`. Deep reactivity is the Svelte 5 showcase; do not
+  route mutations through immutable rebuild-the-tree helpers.
 - Compute derived values with `$derived(...)`.
 - Put side effects, such as persistence, in `$effect(...)`.
-- Declare props with `$props()` in runes mode.
-- Use bindings, such as `bind:value`, for inputs where appropriate.
+- Declare props with `$props()` in runes mode; pass only identity props such as
+  `columnId` and `card`. Components read the board by importing the module -
+  no `$bindable()` chains that turn props into setters.
+- Use bindings, such as `bind:value`, for inputs; with a deep proxy the binding
+  writes one property, not the whole tree.
+- Use `{@attach ...}` for element-scoped DOM work such as focusing the edit
+  input; it replaces the `bind:this` + `$effect` dance.
 - Do not use `$effect` to compute derived values.
 - Do not use legacy Svelte 4 syntax for this exercise.
 
 State:
 
-```svelte
-<script>
-  let state = $state(loadState());
-  let total = $derived(totalCount(state.columns));
-</script>
+```js
+// board.svelte.js
+export const board = $state(loadState());
+
+export const actions = {
+  addCard(columnId, title) {
+    board.columns[columnId].push(createCard(normalizeTitle(title)));
+  }
+  // delete, move, edit, reset...
+};
 ```
 
 Derived values:
 
-- Total count: `$derived(totalCount(state.columns))`.
+- Total count: `$derived(totalCount(board.columns))`.
 - Filtered card lists: `$derived(visibleCards(board, columnId))`.
 - Per-column counts can stay as direct template reads from
   `board.columns[columnId].length`.
 
 Effects:
 
-- Persist durable columns in `$effect`.
+- Persist durable columns in one `$effect`; a deep clone of `board.columns`
+  doubles as the dependency read, so the effect subscribes to every durable
+  change and nothing else.
 - Skip the initial loaded state and reset clear where needed.
 
 Props:
 
 ```svelte
 <script>
-  let { columnId, board = $bindable() } = $props();
+  let { columnId, card } = $props();
 </script>
 ```
 
@@ -463,14 +505,87 @@ You learned it when:
 - You can explain the conceptual difference between `$derived` and `$effect`.
 - You can explain why Svelte reactivity does not need dependency arrays like
   React effects do.
+- You can explain why `card.title = normalized` updates one text node while the
+  React rung rebuilds the component tree for the same edit.
 - You can point to one place where React needed boilerplate that Svelte expresses
   more directly.
 
 Common traps:
 
-- Writing React patterns inside Svelte.
+- Writing React patterns inside Svelte: reassigning a root `$state` with
+  immutable copies, or threading `$bindable()` setters through the tree, throws
+  away the deep-proxy granularity the compiler gives you.
 - Putting side effects in `$derived`.
 - Using legacy `export let` instead of `$props()` for runes mode.
+
+## Rung 5: SolidJS
+
+What you are learning:
+
+- Fine-grained reactivity as a runtime library: components run once, then
+  updates flow through signals straight to the DOM nodes they touch.
+- JSX without a virtual DOM and without a re-render mental model.
+- Nested state as a store; transitions expressed as path setters or localized
+  mutations instead of immutable rebuilds.
+- Control flow as components: `<For>`, `<Show>`, and fallbacks.
+
+Idiomatic constraints:
+
+- Keep board state in one `createStore`, wrapped in a `createBoard()` primitive
+  that exposes intent-named actions.
+- Use path setters for single-location updates and `produce` for transitions
+  that touch several locations at once; group multi-set actions with `batch`.
+- Derive values as plain expressions in JSX or small thunks. Reach for
+  `createMemo` only when a derivation is expensive or fans out; this app needs
+  none, and that absence is idiomatic.
+- Persist in a single deferred effect; the dependency read subscribes it to
+  every durable board change and nothing else.
+- Access props lazily as `props.x`; never destructure them.
+- Use `<For>` for reactive lists (rows follow object identity, no keys) and
+  `<Show>` for the edit swap. Static lists such as the column order are plain
+  `.map` - components run once, so nothing needs to reconcile them.
+- Use `onMount` with a `ref` for focus.
+- Do not import React habits: no dependency arrays, no memoization reflexes, no
+  expecting the component body to re-run.
+
+State and transitions:
+
+```js
+const [board, setBoard] = createStore(loadState());
+
+setBoard("columns", columnId, (cards) => [...cards, createCard(title)]);
+setBoard("columns", columnId, (card) => card.id === cardId, "title", title);
+setBoard(produce((draft) => { /* multi-location transition */ }));
+```
+
+Effects:
+
+```js
+createEffect(
+  on(() => cloneColumns(board.columns), saveColumns, { defer: true })
+);
+```
+
+You learned it when:
+
+- You can explain why a component body runs exactly once, and where updates
+  actually happen after that.
+- You can explain why `<For>` needs no keys: rows follow object identity, and
+  mutating a card title in place updates one text node without touching its row.
+- You can explain why committing an unchanged title writes nothing to storage:
+  store setters bail out on equal values, so the persistence effect never fires.
+- You can explain why destructuring props at setup time silently kills
+  reactivity.
+
+Common traps:
+
+- Destructuring props or reading store values into plain variables during setup,
+  then wondering why the UI never updates.
+- Using `createEffect` to compute derived state.
+- Tracking too much: deep-reading a store inside an effect without `on` scoping
+  what the effect subscribes to.
+- Treating JSX like React: expecting re-renders, adding keys, wrapping
+  everything in memos.
 
 ## Cross-Rung Comparison Guide
 
@@ -479,7 +594,9 @@ Where truth lives:
 - Vanilla: you must enforce that state is truth.
 - jQuery: the temptation is DOM becomes truth.
 - React: state is truth and rendering is derived.
-- Svelte: state is truth and the compiler wires updates directly.
+- Svelte: state is truth in a deep proxy and the compiler wires updates directly.
+- Solid: state is truth in a store, and signals wire it straight to the DOM at
+  runtime.
 
 What updates the UI:
 
@@ -487,24 +604,30 @@ What updates the UI:
 - jQuery: you choose, and manual patch paths multiply.
 - React: component render plus reconciliation.
 - Svelte: reactive dependencies.
+- Solid: fine-grained signal subscriptions created on first render.
 
 How identity bugs are prevented:
 
 - Vanilla and jQuery: `data-card-id` conventions plus careful patching.
 - React: `key`.
 - Svelte: keyed `{#each ... (id)}`.
+- Solid: `<For>` tracks rows by object identity; in-place store mutations keep
+  that identity stable.
 
 Side effect discipline:
 
 - Vanilla and jQuery: anything can happen anywhere unless you impose discipline.
 - React: effects are explicit and constrained with `useEffect`.
 - Svelte: effects are explicit with `$effect`.
+- Solid: effects are explicit with `createEffect`, and `on` scopes what they
+  subscribe to.
 
 What each approach costs:
 
 - Vanilla and jQuery: engineering discipline and ongoing maintenance.
 - React: conceptual overhead around hooks, purity, and component patterns.
 - Svelte: a compile step and framework-specific reactivity model.
+- Solid: a JSX compile step and a components-run-once mental model.
 
 ## Milestone Build Order
 
@@ -536,4 +659,10 @@ At the end of each milestone, write two or three bullets in that rung's notes:
 - [Svelte `$derived`](https://svelte.dev/docs/svelte/$derived)
 - [Svelte `$effect`](https://svelte.dev/docs/svelte/$effect)
 - [Svelte `$props`](https://svelte.dev/docs/svelte/$props)
+- [Svelte attachments `{@attach}`](https://svelte.dev/docs/svelte/@attach)
 - [Svelte legacy `export let`](https://svelte.dev/docs/svelte/legacy-export-let)
+- [solid-js package](https://www.npmjs.com/package/solid-js)
+- [Solid `createStore`](https://docs.solidjs.com/reference/store-utilities/create-store)
+- [Solid `produce`](https://docs.solidjs.com/reference/store-utilities/produce)
+- [Solid `on`](https://docs.solidjs.com/reference/reactive-utilities/on)
+- [Solid `<For>`](https://docs.solidjs.com/reference/components/for)

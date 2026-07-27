@@ -1,31 +1,12 @@
 <script>
-import { resetState, totalCount } from "../../shared/actions.js";
-import { COLUMN_ORDER, clearSavedBoard, loadState, saveColumns } from "../../shared/seed.js";
+import { totalCount } from "../../shared/actions.js";
+import { COLUMN_ORDER } from "../../shared/seed.js";
+import { actions, board, persistColumns } from "./board.svelte.js";
 import Column from "./Column.svelte";
 
-let state = $state(loadState());
-let total = $derived(totalCount(state.columns));
-let isMounted = false;
-let skipNextSave = false;
+let total = $derived(totalCount(board.columns));
 
-$effect(() => {
-  const columns = state.columns;
-  if (!isMounted) {
-    isMounted = true;
-    return;
-  }
-  if (skipNextSave) {
-    skipNextSave = false;
-    return;
-  }
-  saveColumns(columns);
-});
-
-function reset() {
-  clearSavedBoard();
-  skipNextSave = true;
-  state = resetState();
-}
+$effect(persistColumns);
 </script>
 
 <main class="app-shell">
@@ -37,14 +18,14 @@ function reset() {
   </header>
 
   <section class="toolbar">
-    <input aria-label="Filter cards" placeholder="Filter cards" bind:value={state.filter} />
+    <input aria-label="Filter cards" placeholder="Filter cards" bind:value={board.filter} />
     <span class="count-pill">{total} total</span>
-    <button type="button" onclick={reset}>Reset</button>
+    <button type="button" onclick={actions.reset}>Reset</button>
   </section>
 
   <section class="board">
     {#each COLUMN_ORDER as columnId (columnId)}
-      <Column {columnId} bind:board={state} />
+      <Column {columnId} />
     {/each}
   </section>
 </main>
