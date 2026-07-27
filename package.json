@@ -19,7 +19,10 @@
     "build": "npm run build:react && npm run build:svelte && npm run build:solid",
     "build:react": "npm --prefix 05-react run build",
     "build:svelte": "npm --prefix 06-svelte run build",
-    "build:solid": "npm --prefix 07-solid run build"
+    "build:solid": "npm --prefix 07-solid run build",
+    "bench": "npm --prefix bench run bench",
+    "bench:scaling": "npm --prefix bench run bench:scaling",
+    "bench:report": "npm --prefix bench run report"
   },
   "devDependencies": {
     "@biomejs/biome": "2.5.5"

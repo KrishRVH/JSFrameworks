@@ -1,0 +1,79 @@
+[
+  {
+    "id": "vanilla-a",
+    "cards": 1000,
+    "throttle": 4,
+    "network": "fast-3g",
+    "html": 157.5,
+    "js": 351.09999999962747,
+    "render": 48.30000000074506,
+    "total": 556.9000000003725,
+    "transferred": 5341
+  },
+  {
+    "id": "vanilla-b",
+    "cards": 1000,
+    "throttle": 4,
+    "network": "fast-3g",
+    "html": 157.40000000037253,
+    "js": 350.30000000074506,
+    "render": 58.90000000037253,
+    "total": 566.6000000014901,
+    "transferred": 6054
+  },
+  {
+    "id": "jquery-a",
+    "cards": 1000,
+    "throttle": 4,
+    "network": "fast-3g",
+    "html": 157.40000000037253,
+    "js": 500.59999999962747,
+    "render": 139.2000000011176,
+    "total": 797.2000000011176,
+    "transferred": 33009
+  },
+  {
+    "id": "jquery-b",
+    "cards": 1000,
+    "throttle": 4,
+    "network": "fast-3g",
+    "html": 157.5,
+    "js": 500.69999999925494,
+    "render": 142,
+    "total": 800.1999999992549,
+    "transferred": 33567
+  },
+  {
+    "id": "react",
+    "cards": 1000,
+    "throttle": 4,
+    "network": "fast-3g",
+    "html": 157.40000000037253,
+    "js": 463.90000000037253,
+    "render": 108.59999999962747,
+    "total": 729.9000000003725,
+    "transferred": 62030
+  },
+  {
+    "id": "svelte",
+    "cards": 1000,
+    "throttle": 4,
+    "network": "fast-3g",
+    "html": 157.30000000074506,
+    "js": 249.7999999988824,
+    "render": 104.20000000111759,
+    "total": 511.30000000074506,
+    "transferred": 17031
+  },
+  {
+    "id": "solid",
+    "cards": 1000,
+    "throttle": 4,
+    "network": "fast-3g",
+    "html": 157.5,
+    "js": 221.09999999962747,
+    "render": 83.20000000111759,
+    "total": 461.80000000074506,
+    "transferred": 9725
+  }
+]

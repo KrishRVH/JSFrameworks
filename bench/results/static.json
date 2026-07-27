@@ -1,0 +1,79 @@
+[
+  {
+    "id": "vanilla-a",
+    "payload": {
+      "raw": 13214,
+      "gzip": 3884
+    },
+    "authored": {
+      "bytes": 7027,
+      "lines": 242
+    }
+  },
+  {
+    "id": "vanilla-b",
+    "payload": {
+      "raw": 15901,
+      "gzip": 4598
+    },
+    "authored": {
+      "bytes": 9714,
+      "lines": 315
+    }
+  },
+  {
+    "id": "jquery-a",
+    "payload": {
+      "raw": 90681,
+      "gzip": 31118
+    },
+    "authored": {
+      "bytes": 5746,
+      "lines": 188
+    }
+  },
+  {
+    "id": "jquery-b",
+    "payload": {
+      "raw": 93835,
+      "gzip": 31677
+    },
+    "authored": {
+      "bytes": 8900,
+      "lines": 284
+    }
+  },
+  {
+    "id": "react",
+    "payload": {
+      "raw": 196759,
+      "gzip": 61157
+    },
+    "authored": {
+      "bytes": 6626,
+      "lines": 222
+    }
+  },
+  {
+    "id": "svelte",
+    "payload": {
+      "raw": 42054,
+      "gzip": 16158
+    },
+    "authored": {
+      "bytes": 6252,
+      "lines": 219
+    }
+  },
+  {
+    "id": "solid",
+    "payload": {
+      "raw": 23216,
+      "gzip": 8852
+    },
+    "authored": {
+      "bytes": 8054,
+      "lines": 278
+    }
+  }
+]
