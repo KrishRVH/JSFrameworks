@@ -7,6 +7,8 @@
 # Non-npm package manager files
 pnpm-lock.yaml
 yarn.lock
+bun.lock
+bun.lockb
 
 # Logs
 *.log

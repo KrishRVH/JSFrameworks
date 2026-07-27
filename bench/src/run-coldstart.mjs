@@ -4,7 +4,6 @@ import {
   COLDSTART_ITERATIONS,
   COLDSTART_NETWORK,
   CPU_THROTTLE,
-  PORT,
   rungs
 } from "./config.mjs";
 import { makeBoard } from "./seed.mjs";
@@ -21,7 +20,7 @@ export async function runColdstart(browser, log) {
     log(`coldstart: ${rung.id}`);
     const iterations = [];
     for (let iteration = 0; iteration < COLDSTART_ITERATIONS; iteration += 1) {
-      const { page, session } = await openRungPage(browser, rung, {
+      const { page, session, url } = await openRungPage(browser, rung, {
         columns,
         expectedCards: COLDSTART_CARDS,
         cpuThrottle: CPU_THROTTLE
@@ -29,7 +28,7 @@ export async function runColdstart(browser, log) {
       await session.send("Network.enable");
       await session.send("Network.setCacheDisabled", { cacheDisabled: true });
       await session.send("Network.emulateNetworkConditions", COLDSTART_NETWORK);
-      await page.goto(`http://127.0.0.1:${PORT}${rung.path}`);
+      await page.goto(url);
       const boot = await waitForBoot(page);
       const resources = await page.evaluate(() => {
         const [nav] = performance.getEntriesByType("navigation");

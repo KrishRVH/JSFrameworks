@@ -46,6 +46,9 @@ npm run build:solid
 npm run dev:react
 npm run dev:svelte
 npm run dev:solid
+npm run bench
+npm run bench:scaling
+npm run bench:report
 ```
 
 Static apps run with `python3 -m http.server` from the repo root, then open the numbered folder.

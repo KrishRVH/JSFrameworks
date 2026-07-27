@@ -1,5 +1,5 @@
 import { openRungPage, waitForBoot } from "./browser.mjs";
-import { PORT, WORKDAY_CARDS, WORKDAY_ROUNDS, rungs } from "./config.mjs";
+import { WORKDAY_CARDS, WORKDAY_ROUNDS, rungs } from "./config.mjs";
 import { makeWorkday } from "./scenarios.mjs";
 import { makeBoard } from "./seed.mjs";
 
@@ -19,11 +19,11 @@ export async function runWorkday(browser, log) {
   const results = [];
   for (const rung of rungs) {
     log(`workday: ${rung.id}`);
-    const { page, session } = await openRungPage(browser, rung, {
+    const { page, session, url } = await openRungPage(browser, rung, {
       columns,
       expectedCards: WORKDAY_CARDS
     });
-    await page.goto(`http://127.0.0.1:${PORT}${rung.path}`);
+    await page.goto(url);
     await waitForBoot(page);
     await page.evaluate(() => globalThis.__benchSettle());
     await session.send("Performance.enable");

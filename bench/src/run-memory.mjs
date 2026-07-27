@@ -1,13 +1,13 @@
 import { openRungPage, waitForBoot } from "./browser.mjs";
-import { MEMORY_CARDS_LARGE, MEMORY_CARDS_SMALL, PORT, rungs } from "./config.mjs";
+import { MEMORY_CARDS_LARGE, MEMORY_CARDS_SMALL, rungs } from "./config.mjs";
 import { makeBoard } from "./seed.mjs";
 
 async function metricsAt(browser, rung, cardCount) {
-  const { page, session } = await openRungPage(browser, rung, {
+  const { page, session, url } = await openRungPage(browser, rung, {
     columns: makeBoard(cardCount),
     expectedCards: cardCount
   });
-  await page.goto(`http://127.0.0.1:${PORT}${rung.path}`);
+  await page.goto(url);
   await waitForBoot(page);
   await page.evaluate(() => globalThis.__benchSettle());
   await session.send("HeapProfiler.enable");

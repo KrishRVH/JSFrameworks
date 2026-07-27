@@ -13,7 +13,7 @@ export async function runChurn(browser, log) {
 
   for (const rung of rungs) {
     log(`churn: ${rung.id}`);
-    const { page } = await openRungPage(browser, rung, {
+    const { page, url } = await openRungPage(browser, rung, {
       columns,
       expectedCards: CHURN_CARDS,
       deepCount: true
@@ -21,10 +21,9 @@ export async function runChurn(browser, log) {
     const rungResult = { id: rung.id, cards: CHURN_CARDS, boot: null, ops: {} };
 
     for (const scenario of scenarios) {
-      log(`churn: ${rung.id} ${scenario.id}`);
       const samples = [];
       for (let iteration = 0; iteration < 2; iteration += 1) {
-        await page.goto(`http://127.0.0.1:4600${rung.path}`);
+        await page.goto(url);
         const boot = await waitForBoot(page);
         rungResult.boot = boot.bootMutations;
         await page.evaluate(() => globalThis.__benchSettle());

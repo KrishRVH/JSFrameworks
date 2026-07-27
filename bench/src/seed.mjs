@@ -12,10 +12,3 @@ export function makeBoard(cardCount) {
   }
   return columns;
 }
-
-export function expectedVisible(cardCount, filter) {
-  const columns = makeBoard(cardCount);
-  const all = [...columns.todo, ...columns.doing, ...columns.done];
-  const normalized = filter.trim().toLowerCase();
-  return all.filter((card) => !normalized || card.title.toLowerCase().includes(normalized)).length;
-}

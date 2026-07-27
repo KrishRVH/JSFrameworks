@@ -1,5 +1,5 @@
 import { openRungPage, waitForBoot } from "./browser.mjs";
-import { CPU_THROTTLE, PORT, TIMING_CARDS, TIMING_ITERATIONS, rungs } from "./config.mjs";
+import { CPU_THROTTLE, TIMING_CARDS, TIMING_ITERATIONS, rungs } from "./config.mjs";
 import { makeScenarios } from "./scenarios.mjs";
 import { makeBoard } from "./seed.mjs";
 import { summarize } from "./stats.mjs";
@@ -16,7 +16,7 @@ export async function runTiming(browser, log) {
 
   for (const rung of rungs) {
     log(`timing: ${rung.id}`);
-    const { page } = await openRungPage(browser, rung, {
+    const { page, url } = await openRungPage(browser, rung, {
       columns,
       expectedCards: TIMING_CARDS,
       cpuThrottle: CPU_THROTTLE
@@ -35,7 +35,7 @@ export async function runTiming(browser, log) {
       const scriptSamples = [];
       const totalSamples = [];
       for (let iteration = 0; iteration < TIMING_ITERATIONS; iteration += 1) {
-        await page.goto(`http://127.0.0.1:${PORT}${rung.path}`);
+        await page.goto(url);
         const boot = await waitForBoot(page);
         bootSamples.push(boot.bootAt);
         await page.evaluate(() => globalThis.__benchSettle());

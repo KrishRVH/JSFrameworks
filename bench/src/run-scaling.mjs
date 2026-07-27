@@ -1,7 +1,6 @@
 import { openRungPage, waitForBoot } from "./browser.mjs";
 import {
   CPU_THROTTLE,
-  PORT,
   SCALING_ITERATIONS,
   SCALING_OPS,
   SCALING_SIZES,
@@ -29,7 +28,7 @@ export async function runScaling(browser, log) {
       const scenarios = makeScenarios(cards).filter((scenario) =>
         SCALING_OPS.includes(scenario.id)
       );
-      const { page } = await openRungPage(browser, rung, {
+      const { page, url } = await openRungPage(browser, rung, {
         columns,
         expectedCards: cards,
         cpuThrottle: CPU_THROTTLE
@@ -39,7 +38,7 @@ export async function runScaling(browser, log) {
       for (const scenario of scenarios) {
         const scriptSamples = [];
         for (let iteration = 0; iteration < SCALING_ITERATIONS; iteration += 1) {
-          await page.goto(`http://127.0.0.1:${PORT}${rung.path}`);
+          await page.goto(url);
           const boot = await waitForBoot(page);
           bootSamples.push(boot.bootAt);
           await page.evaluate(() => globalThis.__benchSettle());
