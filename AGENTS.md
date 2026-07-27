@@ -54,9 +54,9 @@ Static apps run with `python3 -m http.server` from the repo root, then open the 
 
 - Use ES modules.
 - Let Biome own formatting and linting through the root `biome.json`.
-- Keep state transitions in `shared/actions.js`. Exception: the Svelte and Solid rungs
-  express their transitions natively (deep `$state` proxy mutation and store primitives, see
-  `SPEC.md`) while reusing the shared read and persistence helpers.
+- Keep state transitions in `shared/actions.js`. The Svelte and Solid rungs are the
+  exception: they mutate natively (deep `$state` proxy, store primitives) and reuse only the
+  shared read and persistence helpers. `SPEC.md` explains why.
 - Keep storage, seed data, column constants, and title normalization in `shared/seed.js`.
 - Keep UI-specific code inside the numbered implementation folders.
 - Keep `00-compare-all/` as a minimal viewer; it should not duplicate Kanban app logic.

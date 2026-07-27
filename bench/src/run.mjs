@@ -6,9 +6,13 @@ import { buildRungs } from "./build.mjs";
 import { benchRoot } from "./config.mjs";
 import { generateReport } from "./report.mjs";
 import { runChurn } from "./run-churn.mjs";
+import { runColdstart } from "./run-coldstart.mjs";
+import { collectComposition } from "./run-composition.mjs";
 import { runConformance } from "./run-conformance.mjs";
 import { runMemory } from "./run-memory.mjs";
+import { runScaling } from "./run-scaling.mjs";
 import { runTiming } from "./run-timing.mjs";
+import { runWorkday } from "./run-workday.mjs";
 import { startServer } from "./server.mjs";
 import { collectStaticMetrics } from "./static-metrics.mjs";
 
@@ -23,49 +27,73 @@ function load(name) {
   return JSON.parse(readFileSync(join(resultsDir, `${name}.json`), "utf8"));
 }
 
-const log = (message) => process.stderr.write(`${message}\n`);
-
-const phase = process.argv[2] ?? "all";
-const browserPhases = ["churn", "timing", "memory", "conformance"];
-const phases = phase === "all" ? ["static", ...browserPhases, "report"] : [phase];
-
-if (phases.includes("report") && phases.length === 1) {
+function saveMeta() {
   save("meta", {
     generatedAt: new Date().toISOString(),
     node: process.version,
     platform: `${process.platform} ${process.arch}`
   });
-  generateReport(load, log);
-  process.exit(0);
 }
 
-if (phases.some((name) => browserPhases.includes(name))) {
+const log = (message) => process.stderr.write(`${message}\n`);
+
+const browserPhases = [
+  "churn",
+  "timing",
+  "memory",
+  "workday",
+  "coldstart",
+  "conformance",
+  "scaling"
+];
+// The scaling sweep is opt-in: it is hundreds of page loads including 10k-card
+// boards and belongs to `bench:scaling`, never the default run.
+const defaultPhases = [
+  "static",
+  "composition",
+  "churn",
+  "timing",
+  "memory",
+  "workday",
+  "coldstart",
+  "conformance",
+  "report"
+];
+
+const phase = process.argv[2] ?? "all";
+const phases = phase === "all" ? defaultPhases : [phase];
+
+const runners = {
+  churn: runChurn,
+  timing: runTiming,
+  memory: runMemory,
+  workday: runWorkday,
+  coldstart: runColdstart,
+  conformance: runConformance,
+  scaling: runScaling
+};
+
+const needsBrowser = phases.some((name) => browserPhases.includes(name));
+if (needsBrowser) {
   buildRungs();
 }
-
-const server = phases.some((name) => browserPhases.includes(name)) ? await startServer() : null;
-const browser = server ? await launchBrowser() : null;
+const server = needsBrowser ? await startServer() : null;
+const browser = needsBrowser ? await launchBrowser() : null;
 
 try {
   for (const name of phases) {
     if (name === "static") {
       save("static", collectStaticMetrics());
       log("static: done");
-    } else if (name === "churn") {
-      save("churn", await runChurn(browser, log));
-    } else if (name === "timing") {
-      save("timing", await runTiming(browser, log));
-    } else if (name === "memory") {
-      save("memory", await runMemory(browser, log));
-    } else if (name === "conformance") {
-      save("conformance", await runConformance(browser, log));
+    } else if (name === "composition") {
+      save("composition", collectComposition(log));
     } else if (name === "report") {
-      save("meta", {
-        generatedAt: new Date().toISOString(),
-        node: process.version,
-        platform: `${process.platform} ${process.arch}`
-      });
+      saveMeta();
       generateReport(load, log);
+    } else if (runners[name]) {
+      save(name, await runners[name](browser, log));
+    } else {
+      throw new Error(`Unknown phase: ${name}`);
     }
   }
 } finally {

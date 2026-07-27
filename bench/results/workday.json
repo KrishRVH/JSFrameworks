@@ -1,0 +1,65 @@
+[
+  {
+    "id": "vanilla-a",
+    "cards": 1000,
+    "actions": 110,
+    "script": 0.693009,
+    "style": 0.35378,
+    "layout": 1.93748,
+    "task": 3.944795
+  },
+  {
+    "id": "vanilla-b",
+    "cards": 1000,
+    "actions": 110,
+    "script": 1.793474,
+    "style": 0.197862,
+    "layout": 2.694874,
+    "task": 6.165615
+  },
+  {
+    "id": "jquery-a",
+    "cards": 1000,
+    "actions": 110,
+    "script": 1.869676,
+    "style": 0.359871,
+    "layout": 1.961978,
+    "task": 5.257109000000001
+  },
+  {
+    "id": "jquery-b",
+    "cards": 1000,
+    "actions": 110,
+    "script": 0.434345,
+    "style": 0.080383,
+    "layout": 0.462049,
+    "task": 1.5023119999999999
+  },
+  {
+    "id": "react",
+    "cards": 1000,
+    "actions": 110,
+    "script": 0.362923,
+    "style": 0.043046,
+    "layout": 0.248698,
+    "task": 1.136921
+  },
+  {
+    "id": "svelte",
+    "cards": 1000,
+    "actions": 110,
+    "script": 0.232152,
+    "style": 0.041721,
+    "layout": 0.246577,
+    "task": 0.979754
+  },
+  {
+    "id": "solid",
+    "cards": 1000,
+    "actions": 110,
+    "script": 0.268686,
+    "style": 0.041777,
+    "layout": 0.254536,
+    "task": 1.023985
+  }
+]

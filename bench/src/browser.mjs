@@ -1,10 +1,10 @@
-import { existsSync, readFileSync, readdirSync } from "node:fs";
+import { existsSync, readdirSync } from "node:fs";
 import { homedir } from "node:os";
 import { join } from "node:path";
 
 import { chromium } from "playwright-core";
 
-import { PORT, STORAGE_KEY, benchRoot } from "./config.mjs";
+import { PORT, STORAGE_KEY } from "./config.mjs";
 
 function findChromium() {
   if (process.env.BENCH_CHROMIUM && existsSync(process.env.BENCH_CHROMIUM)) {
@@ -196,12 +196,6 @@ export async function openRungPage(
   { columns, expectedCards, cpuThrottle, deepCount }
 ) {
   const page = await browser.newPage();
-  await page.route("https://code.jquery.com/**", (route) =>
-    route.fulfill({
-      contentType: "text/javascript; charset=utf-8",
-      body: readFileSync(join(benchRoot, "vendor", "jquery-4.0.0.min.js"), "utf8")
-    })
-  );
   const session = await page.context().newCDPSession(page);
   if (cpuThrottle) {
     await session.send("Emulation.setCPUThrottlingRate", { rate: cpuThrottle });

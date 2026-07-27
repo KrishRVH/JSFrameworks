@@ -1,7 +1,4 @@
-import { readFileSync } from "node:fs";
-import { join } from "node:path";
-
-import { PORT, STORAGE_KEY, benchRoot, rungs } from "./config.mjs";
+import { PORT, STORAGE_KEY, rungs } from "./config.mjs";
 
 // SPEC.md acceptance checklist driven through a real browser against every rung.
 // Documented render-loop drift in 01/03 (see their NOTES.md) is encoded as an
@@ -14,12 +11,6 @@ const EXPECTED_DRIFT = {
 async function checkRung(browser, rung) {
   const base = `http://127.0.0.1:${PORT}${rung.path}`;
   const page = await browser.newPage();
-  await page.route("https://code.jquery.com/**", (route) =>
-    route.fulfill({
-      contentType: "text/javascript; charset=utf-8",
-      body: readFileSync(join(benchRoot, "vendor", "jquery-4.0.0.min.js"), "utf8")
-    })
-  );
 
   const results = [];
   const check = (name, ok) => results.push({ name, ok });

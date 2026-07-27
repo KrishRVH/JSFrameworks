@@ -1,0 +1,72 @@
+[
+  {
+    "id": "vanilla-a",
+    "segments": {
+      "framework": 0,
+      "shared": 6187,
+      "app": 7027,
+      "glue": 0
+    },
+    "total": 13214
+  },
+  {
+    "id": "vanilla-b",
+    "segments": {
+      "framework": 0,
+      "shared": 6187,
+      "app": 9714,
+      "glue": 0
+    },
+    "total": 15901
+  },
+  {
+    "id": "jquery-a",
+    "segments": {
+      "framework": 78748,
+      "shared": 6187,
+      "app": 5746,
+      "glue": 0
+    },
+    "total": 90681
+  },
+  {
+    "id": "jquery-b",
+    "segments": {
+      "framework": 78748,
+      "shared": 6187,
+      "app": 8900,
+      "glue": 0
+    },
+    "total": 93835
+  },
+  {
+    "id": "react",
+    "segments": {
+      "framework": 189466,
+      "shared": 2592,
+      "app": 3869,
+      "glue": 824
+    },
+    "total": 196751
+  },
+  {
+    "id": "svelte",
+    "segments": {
+      "framework": 36004,
+      "shared": 1448,
+      "app": 3904,
+      "glue": 698
+    },
+    "total": 42054
+  },
+  {
+    "id": "solid",
+    "segments": {
+      "framework": 16908,
+      "shared": 1430,
+      "app": 4180,
+      "glue": 698
+    },
+    "total": 23216
+  }
+]

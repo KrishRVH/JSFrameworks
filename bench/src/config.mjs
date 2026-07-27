@@ -13,6 +13,23 @@ export const TIMING_CARDS = 1000;
 export const CHURN_CARDS = 300;
 export const MEMORY_CARDS_SMALL = 1000;
 export const MEMORY_CARDS_LARGE = 5000;
+export const WORKDAY_CARDS = 1000;
+export const WORKDAY_ROUNDS = 10;
+export const COLDSTART_CARDS = 1000;
+export const COLDSTART_ITERATIONS = 3;
+// Fast-3G-ish profile for the cold-start phase (Chrome preset values).
+export const COLDSTART_NETWORK = {
+  offline: false,
+  latency: 150,
+  downloadThroughput: (1.6 * 1024 * 1024) / 8,
+  uploadThroughput: (750 * 1024) / 8,
+  connectionType: "cellular3g"
+};
+// The scaling sweep is opt-in (bench:scaling): ~700 page loads including 10k-card
+// boards under CPU throttle, far too slow for the default run.
+export const SCALING_SIZES = [100, 300, 1000, 3000, 10000];
+export const SCALING_ITERATIONS = 5;
+export const SCALING_OPS = ["add-card", "commit-edit", "filter-type", "draft-keystroke"];
 
 // The three built rungs are benchmarked from production builds (dist/), never dev
 // servers: dev transforms and StrictMode double-rendering would poison every number.

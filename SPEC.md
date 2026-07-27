@@ -107,12 +107,12 @@ drift contaminates the comparison.
 
 `shared/seed.js` owns seed data, storage helpers, column constants, and title
 normalization helpers. `shared/actions.js` owns framework-neutral state
-transitions and read helpers. Rungs whose idiom is immutable updates (vanilla,
-jQuery, React) delegate board mutations to these transitions. The Svelte and
-Solid rungs reuse the read helpers and `shared/seed.js`, but express their
-transitions natively - deep `$state` proxy mutation in Svelte, store path
-setters and `produce` in Solid - because fine-grained mutation is the idiom
-each of those frameworks showcases; the behavioral rules stay identical.
+transitions and read helpers. The vanilla, jQuery, and React rungs delegate board
+mutations to these transitions, since immutable updates are their idiom. Svelte
+and Solid keep the read helpers and `shared/seed.js` but write their own
+transitions - deep `$state` proxy mutation in Svelte, store path setters and
+`produce` in Solid - because fine-grained mutation is exactly what those two
+frameworks showcase. The behavioral rules are identical either way.
 
 ## Shared Constraints
 
@@ -448,7 +448,8 @@ What you are learning:
 Idiomatic constraints:
 
 - Keep board state in a module-level `$state(...)` inside `board.svelte.js`,
-  exported alongside intent-named actions that mutate the deep proxy directly:
+  exported alongside intent-named actions.
+- Let actions mutate the deep proxy directly:
   `board.columns[columnId].push(createCard(title))`, `cards.splice(index, 1)`,
   `card.title = normalized`. Deep reactivity is the Svelte 5 showcase; do not
   route mutations through immutable rebuild-the-tree helpers.

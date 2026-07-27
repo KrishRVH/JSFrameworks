@@ -97,15 +97,15 @@ Static implementations:
 python3 -m http.server
 ```
 
-Open them via `127.0.0.1` or `localhost`: card IDs come from `crypto.randomUUID()`, which
-only exists in secure contexts, so a LAN-IP origin cannot add cards.
-
 Then open one of:
 
 - `http://127.0.0.1:8000/01-vanilla-a-rerender/`
 - `http://127.0.0.1:8000/02-vanilla-b-keyed-patch/`
 - `http://127.0.0.1:8000/03-jquery-a-render-loop/`
 - `http://127.0.0.1:8000/04-jquery-b-incremental/`
+
+Stick to `127.0.0.1` or `localhost`: card IDs come from `crypto.randomUUID()`, which only
+exists in secure contexts, so a LAN-IP origin cannot add cards.
 
 React:
 
@@ -145,9 +145,9 @@ npm run build:svelte
 npm run build:solid
 ```
 
-The behavioral contract is verified by the bench conformance suite (below), which drives the
-SPEC.md acceptance checklist through a real browser against every implementation. For quick
-manual checks, focus on add, delete, move, edit commit/cancel, filter, reset, persistence,
+The bench conformance suite verifies the behavioral contract: it drives the SPEC.md
+acceptance checklist through a real browser against every implementation. For quick manual
+checks, focus on add, delete, move, edit commit/cancel, filter, reset, persistence,
 empty-title behavior, and the XSS text case from the spec.
 
 ## Benchmarks
@@ -160,11 +160,18 @@ npm --prefix bench install
 npm run bench
 ```
 
-It produces a DOM write ledger (MutationObserver counts per user action), interaction latency
-on a 1,000-card board (production builds, CPU-throttled, medians), shipped-bytes vs
-authored-lines comparisons, memory/listener counts, and the behavioral conformance matrix.
-Results land in `bench/results/`, and a self-contained report with charts is written to
-`bench/report/index.html`. See [bench/README.md](./bench/README.md) for methodology.
+The default run measures four things. A MutationObserver ledger counts every DOM write each
+strategy issues per user action, and derives a write-amplification factor for a single title
+edit. Latency runs against 1,000-card production builds under CPU throttle: per-interaction
+medians, a script/style/layout CPU breakdown for a fixed editing session, and cold-start
+segments under Fast-3G emulation. Payload gets weighed both ways - bytes shipped against
+lines authored, with bundle composition attributed by sourcemap. And the SPEC.md acceptance
+checklist runs as a browser-driven conformance matrix, alongside memory and listener counts.
+
+`npm run bench:scaling` is a separate, slow opt-in that sweeps latency across
+100-10,000-card boards to produce the latency-vs-board-size curves. Results land in
+`bench/results/`, and the self-contained report is written to `bench/report/index.html`.
+Methodology is in [bench/README.md](./bench/README.md).
 
 ## Learning Focus
 

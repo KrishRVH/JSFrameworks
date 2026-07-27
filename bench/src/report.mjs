@@ -94,6 +94,126 @@ function barPanel({ title, unit, rows, note }) {
   </figure>`;
 }
 
+// Ordered segment steps from the sequential blue ramp, kept inside the ordinal
+// contrast floors for each surface (light: no lighter than step 250; dark: no darker
+// than step 600). Identity is never color-alone: every stacked chart has a legend
+// and per-segment tooltips.
+const TRIO = [
+  { light: "#1c5cab", dark: "#86b6ef" },
+  { light: "#3987e5", dark: "#3987e5" },
+  { light: "#86b6ef", dark: "#184f95" }
+];
+const QUAD = [
+  { light: "#104281", dark: "#86b6ef" },
+  { light: "#256abf", dark: "#3987e5" },
+  { light: "#5598e7", dark: "#256abf" },
+  { light: "#86b6ef", dark: "#184f95" }
+];
+
+function segmentLegend(keys) {
+  return `<div class="legend">${keys
+    .map(
+      (key) =>
+        `<span class="legend-item"><span class="swatch" style="background: light-dark(${key.palette.light}, ${key.palette.dark})"></span>${esc(key.label)}</span>`
+    )
+    .join("")}</div>`;
+}
+
+// Stacked horizontal bars: one row per rung, segments in fixed order with 2px
+// surface gaps, total value labeled at the bar end, per-segment tooltips.
+function stackedPanel({ title, unit, rows, keys, format, note, wide }) {
+  const width = wide ? 720 : 460;
+  const labelWidth = 84;
+  const rowHeight = 24;
+  const barHeight = 14;
+  const chartWidth = width - labelWidth - 84;
+  const totals = rows.map((row) => keys.reduce((sum, key) => sum + row.values[key.key], 0));
+  const max = Math.max(...totals) || 1;
+  const parts = rows.map((row, index) => {
+    const y = index * rowHeight + 6;
+    let x = labelWidth;
+    const segments = keys
+      .map((key) => {
+        const value = row.values[key.key];
+        const segmentWidth = (value / max) * chartWidth;
+        if (segmentWidth < 0.5) {
+          return "";
+        }
+        const share = Math.round((value / totals[index]) * 100);
+        const tooltip = `${rungName(row.id)} · ${key.label}: ${format(value)} (${share}%)`;
+        const rect = `<rect class="mark" x="${x}" y="${y}" width="${Math.max(1, segmentWidth - 2)}" height="${barHeight}" rx="2" fill="light-dark(${key.palette.light}, ${key.palette.dark})"><title>${esc(tooltip)}</title></rect>`;
+        x += segmentWidth;
+        return rect;
+      })
+      .join("");
+    return `<g>
+      <text x="${labelWidth - 8}" y="${y + barHeight - 3}" class="row-label">${esc(rungName(row.id))}</text>
+      ${segments}
+      <text x="${x + 6}" y="${y + barHeight - 3}" class="value-label">${format(totals[index])}</text>
+    </g>`;
+  });
+  const height = rows.length * rowHeight + 8;
+  return `<figure class="panel${wide ? " wide" : ""}">
+    <figcaption>${esc(title)} <span class="unit">${esc(unit)}</span></figcaption>
+    ${segmentLegend(keys)}
+    <svg viewBox="0 0 ${width} ${height}" role="img" aria-label="${esc(title)}">
+      <line x1="${labelWidth}" y1="0" x2="${labelWidth}" y2="${height}" class="baseline" />
+      ${parts.join("\n")}
+    </svg>
+    ${note ? `<p class="note">${note}</p>` : ""}
+  </figure>`;
+}
+
+// Latency-vs-board-size lines: log x axis, per-panel linear y, one fixed-slot line
+// per rung. The section renders a single shared legend; markers carry tooltips and a
+// surface ring so overlapping points stay separable.
+function linePanel({ title, unit, xs, series }) {
+  const width = 460;
+  const height = 240;
+  const pad = { left: 52, right: 16, top: 12, bottom: 30 };
+  const plotWidth = width - pad.left - pad.right;
+  const plotHeight = height - pad.top - pad.bottom;
+  const minX = xs[0];
+  const maxX = xs[xs.length - 1];
+  const sx = (value) => pad.left + (Math.log(value / minX) / Math.log(maxX / minX)) * plotWidth;
+  const maxY = Math.max(...series.flatMap((entry) => entry.values)) * 1.08 || 1;
+  const sy = (value) => pad.top + plotHeight - (value / maxY) * plotHeight;
+  const gridY = [0.25, 0.5, 0.75, 1]
+    .map(
+      (fraction) =>
+        `<line x1="${pad.left}" y1="${sy(maxY * fraction)}" x2="${width - pad.right}" y2="${sy(maxY * fraction)}" class="grid" /><text x="${pad.left - 5}" y="${sy(maxY * fraction) + 3}" class="tick">${fmt(maxY * fraction, 0)}</text>`
+    )
+    .join("");
+  const ticksX = xs
+    .map(
+      (value) =>
+        `<text x="${sx(value)}" y="${height - 8}" class="tick tick-x">${value >= 1000 ? `${value / 1000}k` : value}</text>`
+    )
+    .join("");
+  const lines = series
+    .map((entry) => {
+      const color = `light-dark(${SLOTS[entry.id].light}, ${SLOTS[entry.id].dark})`;
+      const points = entry.values.map((value, index) => `${sx(xs[index])},${sy(value)}`).join(" ");
+      const markers = entry.values
+        .map(
+          (value, index) =>
+            `<circle class="mark" cx="${sx(xs[index])}" cy="${sy(value)}" r="4" fill="${color}"><title>${esc(`${rungName(entry.id)} @ ${xs[index]} cards: ${fmt(value)} ${unit}`)}</title></circle>`
+        )
+        .join("");
+      return `<g><polyline points="${points}" fill="none" stroke="${color}" stroke-width="2" />${markers}</g>`;
+    })
+    .join("\n");
+  return `<figure class="panel">
+    <figcaption>${esc(title)} <span class="unit">${esc(unit)}</span></figcaption>
+    <svg viewBox="0 0 ${width} ${height}" role="img" aria-label="${esc(title)}">
+      ${gridY}
+      <line x1="${pad.left}" y1="${pad.top + plotHeight}" x2="${width - pad.right}" y2="${pad.top + plotHeight}" class="baseline" />
+      ${ticksX}
+      ${lines}
+    </svg>
+  </figure>`;
+}
+
 function dataTable(headers, rows) {
   return `<details><summary>Data table</summary><table>
     <thead><tr>${headers.map((header) => `<th>${esc(header)}</th>`).join("")}</tr></thead>
@@ -153,6 +273,222 @@ function churnSection(churn, scenarioLabels) {
         .join("")}</tr></thead>
       <tbody>${rows.join("\n")}</tbody>
     </table>
+  </section>`;
+}
+
+// Derived from the churn ledger, no extra measurement: DOM writes issued for one
+// logical change (a single card title), on a log scale, with the multiple over the
+// leanest rung as the label.
+function amplificationSection(churn) {
+  const total = (writes) => writes.added + writes.removed + writes.attrs + writes.text;
+  const values = churn.map((rung) => ({ id: rung.id, writes: total(rung.ops["commit-edit"]) }));
+  const min = Math.min(...values.map((entry) => entry.writes).filter((value) => value > 0));
+  const max = Math.max(...values.map((entry) => entry.writes));
+  const width = 720;
+  const labelWidth = 84;
+  const rowHeight = 24;
+  const barHeight = 14;
+  const chartWidth = width - labelWidth - 190;
+  const parts = values.map((entry, index) => {
+    const y = index * rowHeight + 6;
+    const barWidth = Math.max(2, (Math.log(entry.writes + 1) / Math.log(max + 1)) * chartWidth);
+    const ratio = entry.writes / min;
+    const label = `${entry.writes.toLocaleString("en-US")} writes · ${
+      ratio >= 10 ? Math.round(ratio).toLocaleString("en-US") : ratio.toFixed(1)
+    }× the leanest`;
+    const color = SLOTS[entry.id];
+    return `<g>
+      <text x="${labelWidth - 8}" y="${y + barHeight - 3}" class="row-label">${esc(rungName(entry.id))}</text>
+      ${roundedBar(labelWidth, y, barWidth, barHeight, `light-dark(${color.light}, ${color.dark})`, `${rungName(entry.id)}: ${label}`)}
+      <text x="${labelWidth + barWidth + 6}" y="${y + barHeight - 3}" class="value-label">${esc(label)}</text>
+    </g>`;
+  });
+  const height = values.length * rowHeight + 8;
+  return `<section>
+    <h2>Write amplification</h2>
+    <p>One logical change &mdash; commit a single edited card title on a 300-card board &mdash;
+    and the DOM writes each strategy spends on it. Log scale; derived directly from the write
+    ledger above.</p>
+    <figure class="panel wide">
+      <figcaption>DOM writes per single-title commit <span class="unit">log scale</span></figcaption>
+      <svg viewBox="0 0 ${width} ${height}" role="img" aria-label="Write amplification">
+        <line x1="${labelWidth}" y1="0" x2="${labelWidth}" y2="${height}" class="baseline" />
+        ${parts.join("\n")}
+      </svg>
+    </figure>
+  </section>`;
+}
+
+function scalingSection(scaling, scenarioLabels) {
+  const xs = scaling[0].sizes.map((size) => size.cards);
+  const opIds = Object.keys(scaling[0].sizes[0].ops);
+  const legend = `<div class="legend">${scaling
+    .map(
+      (rung) =>
+        `<span class="legend-item"><span class="swatch" style="background: light-dark(${SLOTS[rung.id].light}, ${SLOTS[rung.id].dark})"></span>${esc(rungName(rung.id))}</span>`
+    )
+    .join("")}</div>`;
+  const panels = [
+    linePanel({
+      title: "Boot: seeded board fully rendered",
+      unit: "ms",
+      xs,
+      series: scaling.map((rung) => ({
+        id: rung.id,
+        values: rung.sizes.map((size) => size.boot.median)
+      }))
+    }),
+    ...opIds.map((op) =>
+      linePanel({
+        title: scenarioLabels[op] ?? op,
+        unit: "ms",
+        xs,
+        series: scaling.map((rung) => ({
+          id: rung.id,
+          values: rung.sizes.map((size) => size.ops[op].script.median)
+        }))
+      })
+    )
+  ];
+  const table = dataTable(
+    ["operation", "cards", ...scaling.map((rung) => `${rungName(rung.id)} (ms)`)],
+    xs.flatMap((cards, sizeIndex) => [
+      ["boot", cards, ...scaling.map((rung) => fmt(rung.sizes[sizeIndex].boot.median))],
+      ...opIds.map((op) => [
+        scenarioLabels[op] ?? op,
+        cards,
+        ...scaling.map((rung) => fmt(rung.sizes[sizeIndex].ops[op].script.median))
+      ])
+    ])
+  );
+  return `<section>
+    <h2>Scaling: latency vs board size</h2>
+    <p>The timing methodology swept across board sizes (${xs.join(", ")} cards; log x axis,
+    ${scaling[0].iterations} runs per point, ${scaling[0].throttle}&times; CPU throttle). The
+    shape is the story. Full rebuilds and framework list reconciliation both rise with N
+    &mdash; what differs is the constant &mdash; while jQuery B's hand-targeted patches are
+    the only structural updates that stay flat. The draft-keystroke panel is the fine-grained
+    test: strategies that touch just the input hold at a millisecond regardless of board
+    size.</p>
+    ${legend}
+    <div class="panel-grid">${panels.join("\n")}</div>
+    ${table}
+  </section>`;
+}
+
+function workdaySection(workday) {
+  const keys = [
+    { key: "script", label: "script", palette: TRIO[0] },
+    { key: "style", label: "style recalc", palette: TRIO[1] },
+    { key: "layout", label: "layout", palette: TRIO[2] }
+  ];
+  const panel = stackedPanel({
+    title: `CPU per ${workday[0].actions}-action session`,
+    unit: "seconds",
+    wide: true,
+    rows: workday.map((entry) => ({ id: entry.id, values: entry })),
+    keys,
+    format: (value) => `${value.toFixed(2)} s`,
+    note: "Unthrottled CDP task accounting on a 1,000-card board; idle time between actions contributes nothing."
+  });
+  const table = dataTable(
+    ["rung", "script (s)", "style recalc (s)", "layout (s)", "all tasks (s)"],
+    workday.map((entry) => [
+      rungName(entry.id),
+      entry.script.toFixed(2),
+      entry.style.toFixed(2),
+      entry.layout.toFixed(2),
+      entry.task.toFixed(2)
+    ])
+  );
+  return `<section>
+    <h2>Cost of a workday</h2>
+    <p>A fixed, deterministic editing session &mdash; adds, edits with keystrokes, moves,
+    filters, deletes &mdash; run identically against every rung, with cumulative CPU time split
+    by what the browser was doing. Rebuild strategies pay in style and layout; virtual-DOM
+    reconciliation pays in script.</p>
+    ${panel}
+    ${table}
+  </section>`;
+}
+
+function coldstartSection(coldstart) {
+  const keys = [
+    { key: "html", label: "HTML", palette: TRIO[0] },
+    { key: "js", label: "JS transfer", palette: TRIO[1] },
+    { key: "render", label: "parse + execute + render", palette: TRIO[2] }
+  ];
+  const panel = stackedPanel({
+    title: "Cold load to rendered board",
+    unit: "ms",
+    wide: true,
+    rows: coldstart.map((entry) => ({ id: entry.id, values: entry })),
+    keys,
+    format: (value) => `${fmt(value, 0)} ms`,
+    note: "Median of 3 cold loads; HTTP cache disabled."
+  });
+  const table = dataTable(
+    [
+      "rung",
+      "HTML (ms)",
+      "JS transfer (ms)",
+      "parse+exec+render (ms)",
+      "total (ms)",
+      "JS transferred"
+    ],
+    coldstart.map((entry) => [
+      rungName(entry.id),
+      fmt(entry.html, 0),
+      fmt(entry.js, 0),
+      fmt(entry.render, 0),
+      fmt(entry.total, 0),
+      kb(entry.transferred)
+    ])
+  );
+  return `<section>
+    <h2>Cold start on a slow connection</h2>
+    <p>Fast-3G network emulation plus ${coldstart[0].throttle}&times; CPU throttle, loading a
+    persisted ${coldstart[0].cards.toLocaleString("en-US")}-card board from scratch. This is
+    where shipped bytes become felt time: transfer dominates for the heavy bundles, then the
+    rebuild rungs pay again at render.</p>
+    ${panel}
+    ${table}
+  </section>`;
+}
+
+function compositionSection(composition) {
+  const keys = [
+    { key: "framework", label: "framework", palette: QUAD[0] },
+    { key: "shared", label: "shared helpers", palette: QUAD[1] },
+    { key: "app", label: "app code", palette: QUAD[2] },
+    { key: "glue", label: "bundler glue", palette: QUAD[3] }
+  ];
+  const panel = stackedPanel({
+    title: "Shipped bytes by origin",
+    unit: "uncompressed",
+    wide: true,
+    rows: composition.map((entry) => ({ id: entry.id, values: entry.segments })),
+    keys,
+    format: kb,
+    note: "Built rungs attributed via sourcemaps on a dedicated --sourcemap build; static rungs ship sources verbatim."
+  });
+  const table = dataTable(
+    ["rung", "framework", "shared helpers", "app code", "bundler glue", "total"],
+    composition.map((entry) => [
+      rungName(entry.id),
+      kb(entry.segments.framework),
+      kb(entry.segments.shared),
+      kb(entry.segments.app),
+      kb(entry.segments.glue),
+      kb(entry.total)
+    ])
+  );
+  return `<section>
+    <h2>Bundle composition</h2>
+    <p>Who the shipped bytes belong to. The app is the same everywhere; what changes is how
+    much framework rides along with it.</p>
+    ${panel}
+    ${table}
   </section>`;
 }
 
@@ -360,6 +696,11 @@ const STYLE = `
   .whisker { stroke: light-dark(#0b0b0b, #ffffff); stroke-opacity: 0.45; stroke-width: 2; }
   .mark:hover { opacity: 0.8; }
   .note { font-size: 0.8rem; color: #898781; margin: 0.35rem 0 0.25rem; }
+  .legend { display: flex; flex-wrap: wrap; gap: 0.35rem 1rem; margin: 0 0 0.5rem; }
+  .legend-item { display: inline-flex; align-items: center; gap: 0.35rem;
+    font-size: 0.8rem; color: light-dark(#52514e, #c3c2b7); }
+  .swatch { width: 10px; height: 10px; border-radius: 2px; display: inline-block; }
+  .tick-x { text-anchor: middle; }
   table { border-collapse: collapse; font-size: 0.85rem; }
   th, td { padding: 0.35rem 0.6rem; text-align: left; }
   td { font-variant-numeric: tabular-nums; }
@@ -382,12 +723,23 @@ ${SEQ.map((hex, index) => {
 `;
 
 export function generateReport(load, log) {
+  const optional = (name) => {
+    try {
+      return load(name);
+    } catch {
+      return null;
+    }
+  };
   const meta = load("meta");
   const staticMetrics = load("static");
   const churn = load("churn");
   const timing = load("timing");
   const memory = load("memory");
   const conformance = load("conformance");
+  const workday = optional("workday");
+  const coldstart = optional("coldstart");
+  const composition = optional("composition");
+  const scaling = optional("scaling");
 
   const scenarioLabels = {
     "add-card": "Add one card",
@@ -420,8 +772,13 @@ export function generateReport(load, log) {
   )} &middot; single machine, treat cross-machine comparisons as invalid.</p>
   ${conformanceSection(conformance)}
   ${churnSection(churn, scenarioLabels)}
+  ${amplificationSection(churn)}
   ${timingSection(timing, scenarioLabels)}
+  ${scaling ? scalingSection(scaling, scenarioLabels) : ""}
+  ${workday ? workdaySection(workday) : ""}
+  ${coldstart ? coldstartSection(coldstart) : ""}
   ${staticSection(staticMetrics)}
+  ${composition ? compositionSection(composition) : ""}
   ${memorySection(memory)}
 </main>
 </body>

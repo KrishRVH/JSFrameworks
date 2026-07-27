@@ -10,10 +10,14 @@
   "scripts": {
     "bench": "node src/run.mjs",
     "bench:static": "node src/run.mjs static",
+    "bench:composition": "node src/run.mjs composition",
     "bench:churn": "node src/run.mjs churn",
     "bench:timing": "node src/run.mjs timing",
     "bench:memory": "node src/run.mjs memory",
+    "bench:workday": "node src/run.mjs workday",
+    "bench:coldstart": "node src/run.mjs coldstart",
     "bench:conformance": "node src/run.mjs conformance",
+    "bench:scaling": "node src/run.mjs scaling",
     "report": "node src/run.mjs report"
   },
   "dependencies": {

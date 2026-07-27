@@ -13,6 +13,53 @@ function todoCount() {
   return `document.querySelectorAll(".board .column:nth-child(1) .card").length`;
 }
 
+// A deterministic ~110-action editing session for the CPU-workday phase. Each entry
+// is run and settled individually; the board returns to its starting size (adds and
+// deletes balance out), so rounds are comparable.
+export function makeWorkday(rounds) {
+  const steps = [];
+  const card = (column) => `.board .column:nth-child(${column}) .card`;
+  for (let round = 0; round < rounds; round += 1) {
+    const column = (round % 3) + 1;
+    steps.push(`() => {
+      ${SET_INPUT}
+      const form = document.querySelector(".board .column:nth-child(${column}) .add-form");
+      setInput(form.querySelector("input"), "Workday item ${round}");
+      form.requestSubmit();
+    }`);
+    steps.push(`() => { document.querySelector("${card(1)} .card-title-button").click(); }`);
+    for (let keystroke = 0; keystroke < 3; keystroke += 1) {
+      steps.push(`() => {
+        ${SET_INPUT}
+        setInput(document.querySelector("${card(1)} input"), "Renamed ${round} pass ${keystroke}");
+      }`);
+    }
+    steps.push(`() => {
+      document.querySelector("${card(1)} input").dispatchEvent(
+        new KeyboardEvent("keydown", { key: "Enter", bubbles: true, cancelable: true })
+      );
+    }`);
+    steps.push(
+      `() => { document.querySelector("${card(1)} .card-actions button:nth-child(2)").click(); }`
+    );
+    steps.push(
+      `() => { document.querySelector("${card(2)} .card-actions button:nth-child(2)").click(); }`
+    );
+    steps.push(`() => {
+      ${SET_INPUT}
+      setInput(document.querySelector(".toolbar input"), "alpha");
+    }`);
+    steps.push(`() => {
+      ${SET_INPUT}
+      setInput(document.querySelector(".toolbar input"), "");
+    }`);
+    steps.push(
+      `() => { document.querySelector("${card(1)} .card-actions button:nth-child(3)").click(); }`
+    );
+  }
+  return steps;
+}
+
 export function makeScenarios(cardCount) {
   const perColumn = Math.ceil(cardCount / 3);
   const alphaCount = perColumn;
