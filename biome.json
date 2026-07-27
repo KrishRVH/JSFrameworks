@@ -16,6 +16,9 @@
       "!!**/.gstack",
       "!!**/.svelte-kit",
       "!!**/.vite",
+      "!!**/bench/report",
+      "!!**/bench/results",
+      "!!**/bench/vendor",
       "!!**/build",
       "!!**/coverage",
       "!!**/dist",
@@ -242,6 +245,23 @@
     }
   },
   "overrides": [
+    {
+      "includes": ["**/bench/**"],
+      "linter": {
+        "rules": {
+          "nursery": {
+            "noLoopFunc": "off"
+          },
+          "performance": {
+            "noAwaitInLoops": "off",
+            "useTopLevelRegex": "off"
+          },
+          "suspicious": {
+            "noConsole": "off"
+          }
+        }
+      }
+    },
     {
       "includes": ["**/07-solid/**"],
       "linter": {

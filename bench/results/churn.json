@@ -1,0 +1,527 @@
+[
+  {
+    "id": "vanilla-a",
+    "cards": 300,
+    "boot": {
+      "added": 6132,
+      "removed": 1,
+      "attrs": 0,
+      "text": 2
+    },
+    "ops": {
+      "add-card": {
+        "added": 3044,
+        "removed": 3034,
+        "attrs": 0,
+        "text": 0,
+        "deterministic": true
+      },
+      "delete-middle": {
+        "added": 3024,
+        "removed": 3034,
+        "attrs": 0,
+        "text": 0,
+        "deterministic": true
+      },
+      "move-card": {
+        "added": 3034,
+        "removed": 3034,
+        "attrs": 0,
+        "text": 0,
+        "deterministic": true
+      },
+      "start-edit": {
+        "added": 3033,
+        "removed": 3034,
+        "attrs": 0,
+        "text": 0,
+        "deterministic": true
+      },
+      "draft-keystroke": {
+        "added": 0,
+        "removed": 0,
+        "attrs": 0,
+        "text": 0,
+        "deterministic": true
+      },
+      "commit-edit": {
+        "added": 3034,
+        "removed": 3033,
+        "attrs": 0,
+        "text": 0,
+        "deterministic": true
+      },
+      "filter-type": {
+        "added": 1038,
+        "removed": 3034,
+        "attrs": 0,
+        "text": 0,
+        "deterministic": true
+      },
+      "filter-clear": {
+        "added": 3034,
+        "removed": 1038,
+        "attrs": 0,
+        "text": 0,
+        "deterministic": true
+      },
+      "reset": {
+        "added": 64,
+        "removed": 3034,
+        "attrs": 0,
+        "text": 0,
+        "deterministic": true
+      }
+    }
+  },
+  {
+    "id": "vanilla-b",
+    "cards": 300,
+    "boot": {
+      "added": 6132,
+      "removed": 1,
+      "attrs": 0,
+      "text": 2
+    },
+    "ops": {
+      "add-card": {
+        "added": 1214,
+        "removed": 1204,
+        "attrs": 6500,
+        "text": 0,
+        "deterministic": true
+      },
+      "delete-middle": {
+        "added": 1690,
+        "removed": 1700,
+        "attrs": 6478,
+        "text": 0,
+        "deterministic": true
+      },
+      "move-card": {
+        "added": 2204,
+        "removed": 2204,
+        "attrs": 6500,
+        "text": 0,
+        "deterministic": true
+      },
+      "start-edit": {
+        "added": 1204,
+        "removed": 1205,
+        "attrs": 6495,
+        "text": 0,
+        "deterministic": true
+      },
+      "draft-keystroke": {
+        "added": 1203,
+        "removed": 1203,
+        "attrs": 6499,
+        "text": 0,
+        "deterministic": true
+      },
+      "commit-edit": {
+        "added": 1205,
+        "removed": 1204,
+        "attrs": 6495,
+        "text": 0,
+        "deterministic": true
+      },
+      "filter-type": {
+        "added": 408,
+        "removed": 2404,
+        "attrs": 2200,
+        "text": 0,
+        "deterministic": true
+      },
+      "filter-clear": {
+        "added": 2404,
+        "removed": 408,
+        "attrs": 2200,
+        "text": 0,
+        "deterministic": true
+      },
+      "reset": {
+        "added": 34,
+        "removed": 3004,
+        "attrs": 0,
+        "text": 0,
+        "deterministic": true
+      }
+    }
+  },
+  {
+    "id": "jquery-a",
+    "cards": 300,
+    "boot": {
+      "added": 6134,
+      "removed": 1,
+      "attrs": 0,
+      "text": 2
+    },
+    "ops": {
+      "add-card": {
+        "added": 3044,
+        "removed": 3034,
+        "attrs": 0,
+        "text": 0,
+        "deterministic": true
+      },
+      "delete-middle": {
+        "added": 3024,
+        "removed": 3034,
+        "attrs": 0,
+        "text": 0,
+        "deterministic": true
+      },
+      "move-card": {
+        "added": 3034,
+        "removed": 3034,
+        "attrs": 0,
+        "text": 0,
+        "deterministic": true
+      },
+      "start-edit": {
+        "added": 3033,
+        "removed": 3034,
+        "attrs": 0,
+        "text": 0,
+        "deterministic": true
+      },
+      "draft-keystroke": {
+        "added": 0,
+        "removed": 0,
+        "attrs": 0,
+        "text": 0,
+        "deterministic": true
+      },
+      "commit-edit": {
+        "added": 3034,
+        "removed": 3033,
+        "attrs": 0,
+        "text": 0,
+        "deterministic": true
+      },
+      "filter-type": {
+        "added": 1038,
+        "removed": 3034,
+        "attrs": 0,
+        "text": 0,
+        "deterministic": true
+      },
+      "filter-clear": {
+        "added": 3034,
+        "removed": 1038,
+        "attrs": 0,
+        "text": 0,
+        "deterministic": true
+      },
+      "reset": {
+        "added": 64,
+        "removed": 3034,
+        "attrs": 0,
+        "text": 0,
+        "deterministic": true
+      }
+    }
+  },
+  {
+    "id": "jquery-b",
+    "cards": 300,
+    "boot": {
+      "added": 6100,
+      "removed": 0,
+      "attrs": 0,
+      "text": 2
+    },
+    "ops": {
+      "add-card": {
+        "added": 14,
+        "removed": 4,
+        "attrs": 0,
+        "text": 0,
+        "deterministic": true
+      },
+      "delete-middle": {
+        "added": 4,
+        "removed": 14,
+        "attrs": 0,
+        "text": 0,
+        "deterministic": true
+      },
+      "move-card": {
+        "added": 14,
+        "removed": 14,
+        "attrs": 6,
+        "text": 0,
+        "deterministic": true
+      },
+      "start-edit": {
+        "added": 1,
+        "removed": 2,
+        "attrs": 0,
+        "text": 0,
+        "deterministic": true
+      },
+      "draft-keystroke": {
+        "added": 0,
+        "removed": 0,
+        "attrs": 0,
+        "text": 0,
+        "deterministic": true
+      },
+      "commit-edit": {
+        "added": 6,
+        "removed": 5,
+        "attrs": 0,
+        "text": 0,
+        "deterministic": true
+      },
+      "filter-type": {
+        "added": 1004,
+        "removed": 3000,
+        "attrs": 0,
+        "text": 0,
+        "deterministic": true
+      },
+      "filter-clear": {
+        "added": 3000,
+        "removed": 1004,
+        "attrs": 0,
+        "text": 0,
+        "deterministic": true
+      },
+      "reset": {
+        "added": 106,
+        "removed": 3046,
+        "attrs": 0,
+        "text": 0,
+        "deterministic": true
+      }
+    }
+  },
+  {
+    "id": "react",
+    "cards": 300,
+    "boot": {
+      "added": 3094,
+      "removed": 0,
+      "attrs": 0,
+      "text": 2
+    },
+    "ops": {
+      "add-card": {
+        "added": 10,
+        "removed": 0,
+        "attrs": 13,
+        "text": 2,
+        "deterministic": true
+      },
+      "delete-middle": {
+        "added": 0,
+        "removed": 10,
+        "attrs": 11,
+        "text": 2,
+        "deterministic": true
+      },
+      "move-card": {
+        "added": 10,
+        "removed": 10,
+        "attrs": 11,
+        "text": 2,
+        "deterministic": true
+      },
+      "start-edit": {
+        "added": 1,
+        "removed": 2,
+        "attrs": 11,
+        "text": 0,
+        "deterministic": true
+      },
+      "draft-keystroke": {
+        "added": 0,
+        "removed": 0,
+        "attrs": 16,
+        "text": 0,
+        "deterministic": true
+      },
+      "commit-edit": {
+        "added": 2,
+        "removed": 1,
+        "attrs": 11,
+        "text": 0,
+        "deterministic": true
+      },
+      "filter-type": {
+        "added": 4,
+        "removed": 2000,
+        "attrs": 14,
+        "text": 0,
+        "deterministic": true
+      },
+      "filter-clear": {
+        "added": 2000,
+        "removed": 4,
+        "attrs": 14,
+        "text": 0,
+        "deterministic": true
+      },
+      "reset": {
+        "added": 30,
+        "removed": 3000,
+        "attrs": 11,
+        "text": 4,
+        "deterministic": true
+      }
+    }
+  },
+  {
+    "id": "svelte",
+    "cards": 300,
+    "boot": {
+      "added": 4318,
+      "removed": 0,
+      "attrs": 0,
+      "text": 2
+    },
+    "ops": {
+      "add-card": {
+        "added": 14,
+        "removed": 0,
+        "attrs": 0,
+        "text": 2,
+        "deterministic": true
+      },
+      "delete-middle": {
+        "added": 0,
+        "removed": 14,
+        "attrs": 0,
+        "text": 2,
+        "deterministic": true
+      },
+      "move-card": {
+        "added": 14,
+        "removed": 14,
+        "attrs": 0,
+        "text": 2,
+        "deterministic": true
+      },
+      "start-edit": {
+        "added": 1,
+        "removed": 2,
+        "attrs": 0,
+        "text": 0,
+        "deterministic": true
+      },
+      "draft-keystroke": {
+        "added": 0,
+        "removed": 0,
+        "attrs": 0,
+        "text": 0,
+        "deterministic": true
+      },
+      "commit-edit": {
+        "added": 2,
+        "removed": 1,
+        "attrs": 0,
+        "text": 0,
+        "deterministic": true
+      },
+      "filter-type": {
+        "added": 4,
+        "removed": 2804,
+        "attrs": 0,
+        "text": 0,
+        "deterministic": true
+      },
+      "filter-clear": {
+        "added": 2804,
+        "removed": 4,
+        "attrs": 0,
+        "text": 0,
+        "deterministic": true
+      },
+      "reset": {
+        "added": 42,
+        "removed": 4200,
+        "attrs": 0,
+        "text": 4,
+        "deterministic": true
+      }
+    }
+  },
+  {
+    "id": "solid",
+    "cards": 300,
+    "boot": {
+      "added": 3094,
+      "removed": 0,
+      "attrs": 0,
+      "text": 2
+    },
+    "ops": {
+      "add-card": {
+        "added": 10,
+        "removed": 0,
+        "attrs": 0,
+        "text": 2,
+        "deterministic": true
+      },
+      "delete-middle": {
+        "added": 0,
+        "removed": 10,
+        "attrs": 0,
+        "text": 2,
+        "deterministic": true
+      },
+      "move-card": {
+        "added": 10,
+        "removed": 10,
+        "attrs": 0,
+        "text": 2,
+        "deterministic": true
+      },
+      "start-edit": {
+        "added": 1,
+        "removed": 2,
+        "attrs": 0,
+        "text": 0,
+        "deterministic": true
+      },
+      "draft-keystroke": {
+        "added": 0,
+        "removed": 0,
+        "attrs": 0,
+        "text": 0,
+        "deterministic": true
+      },
+      "commit-edit": {
+        "added": 2,
+        "removed": 1,
+        "attrs": 0,
+        "text": 0,
+        "deterministic": true
+      },
+      "filter-type": {
+        "added": 4,
+        "removed": 2000,
+        "attrs": 0,
+        "text": 0,
+        "deterministic": true
+      },
+      "filter-clear": {
+        "added": 2000,
+        "removed": 4,
+        "attrs": 0,
+        "text": 0,
+        "deterministic": true
+      },
+      "reset": {
+        "added": 30,
+        "removed": 3000,
+        "attrs": 0,
+        "text": 4,
+        "deterministic": true
+      }
+    }
+  }
+]

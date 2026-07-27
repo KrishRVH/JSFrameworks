@@ -1,0 +1,114 @@
+[
+  {
+    "id": "vanilla-a",
+    "small": {
+      "cards": 1000,
+      "heap": 1389412,
+      "listeners": 18,
+      "nodes": 10083
+    },
+    "large": {
+      "cards": 5000,
+      "heap": 1961920,
+      "listeners": 18,
+      "nodes": 50083
+    },
+    "retainedPerCard": 143.127
+  },
+  {
+    "id": "vanilla-b",
+    "small": {
+      "cards": 1000,
+      "heap": 1398700,
+      "listeners": 18,
+      "nodes": 10083
+    },
+    "large": {
+      "cards": 5000,
+      "heap": 2162836,
+      "listeners": 18,
+      "nodes": 50083
+    },
+    "retainedPerCard": 191.034
+  },
+  {
+    "id": "jquery-a",
+    "small": {
+      "cards": 1000,
+      "heap": 1690548,
+      "listeners": 18,
+      "nodes": 10088
+    },
+    "large": {
+      "cards": 5000,
+      "heap": 2241504,
+      "listeners": 18,
+      "nodes": 50088
+    },
+    "retainedPerCard": 137.739
+  },
+  {
+    "id": "jquery-b",
+    "small": {
+      "cards": 1000,
+      "heap": 1772608,
+      "listeners": 18,
+      "nodes": 10088
+    },
+    "large": {
+      "cards": 5000,
+      "heap": 2340244,
+      "listeners": 18,
+      "nodes": 50088
+    },
+    "retainedPerCard": 141.909
+  },
+  {
+    "id": "react",
+    "small": {
+      "cards": 1000,
+      "heap": 3514908,
+      "listeners": 4159,
+      "nodes": 10089
+    },
+    "large": {
+      "cards": 5000,
+      "heap": 10050884,
+      "listeners": 20159,
+      "nodes": 50089
+    },
+    "retainedPerCard": 1633.994
+  },
+  {
+    "id": "svelte",
+    "small": {
+      "cards": 1000,
+      "heap": 5881052,
+      "listeners": 22,
+      "nodes": 14170
+    },
+    "large": {
+      "cards": 5000,
+      "heap": 22879132,
+      "listeners": 22,
+      "nodes": 70170
+    },
+    "retainedPerCard": 4249.52
+  },
+  {
+    "id": "solid",
+    "small": {
+      "cards": 1000,
+      "heap": 5924720,
+      "listeners": 19,
+      "nodes": 10130
+    },
+    "large": {
+      "cards": 5000,
+      "heap": 23701656,
+      "listeners": 19,
+      "nodes": 50130
+    },
+    "retainedPerCard": 4444.234
+  }
+]

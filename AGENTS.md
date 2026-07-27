@@ -12,6 +12,8 @@ Tiny Kanban is one app implemented seven ways for comparison. Keep behavior alig
 - `06-svelte/`: Svelte 5 runes Vite app, source in `06-svelte/src/`.
 - `07-solid/`: SolidJS Vite app, source in `07-solid/src/`.
 - `shared/`: shared CSS, seed/storage helpers, and framework-neutral state transitions.
+- `bench/`: benchmark + conformance suite (DOM write ledger, latency, payload, memory,
+  behavior checks) and report generator. See `bench/README.md`.
 - `SPEC.md`: canonical behavior contract and learning ladder.
 
 ## Tooling
@@ -64,8 +66,10 @@ Static apps run with `python3 -m http.server` from the repo root, then open the 
 
 ## Verification
 
-There is no permanent automated test suite. For framework changes, run `npm run build`; for
-broader changes, run `npm run check` too.
+For framework changes, run `npm run build`; for broader changes, run `npm run check` too.
+Behavior is verified by the bench conformance suite: `npm --prefix bench run bench:conformance`
+drives the `SPEC.md` acceptance checklist through a real browser against every rung (requires a
+Chromium binary; see `bench/README.md`).
 
 Manual behavior checks should cover add, delete, move, edit commit/cancel, filter, reset,
 persistence, empty-title behavior, and the XSS text case from `SPEC.md`.

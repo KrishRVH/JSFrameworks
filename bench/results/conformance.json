@@ -1,0 +1,70 @@
+[
+  {
+    "id": "vanilla-a",
+    "passed": 29,
+    "total": 31,
+    "failures": [
+      "blur-commit then move",
+      "first click after blur-commit lands"
+    ],
+    "expectedDrift": [
+      "blur-commit then move",
+      "first click after blur-commit lands"
+    ],
+    "unexpectedFailures": []
+  },
+  {
+    "id": "vanilla-b",
+    "passed": 31,
+    "total": 31,
+    "failures": [],
+    "expectedDrift": [],
+    "unexpectedFailures": []
+  },
+  {
+    "id": "jquery-a",
+    "passed": 29,
+    "total": 31,
+    "failures": [
+      "blur-commit then move",
+      "first click after blur-commit lands"
+    ],
+    "expectedDrift": [
+      "blur-commit then move",
+      "first click after blur-commit lands"
+    ],
+    "unexpectedFailures": []
+  },
+  {
+    "id": "jquery-b",
+    "passed": 31,
+    "total": 31,
+    "failures": [],
+    "expectedDrift": [],
+    "unexpectedFailures": []
+  },
+  {
+    "id": "react",
+    "passed": 31,
+    "total": 31,
+    "failures": [],
+    "expectedDrift": [],
+    "unexpectedFailures": []
+  },
+  {
+    "id": "svelte",
+    "passed": 31,
+    "total": 31,
+    "failures": [],
+    "expectedDrift": [],
+    "unexpectedFailures": []
+  },
+  {
+    "id": "solid",
+    "passed": 31,
+    "total": 31,
+    "failures": [],
+    "expectedDrift": [],
+    "unexpectedFailures": []
+  }
+]

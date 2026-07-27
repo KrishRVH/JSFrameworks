@@ -1,0 +1,22 @@
+{
+  "name": "tiny-kanban-bench",
+  "private": true,
+  "type": "module",
+  "packageManager": "npm@11.16.0",
+  "engines": {
+    "node": ">=26.3.0",
+    "npm": ">=11.16.0"
+  },
+  "scripts": {
+    "bench": "node src/run.mjs",
+    "bench:static": "node src/run.mjs static",
+    "bench:churn": "node src/run.mjs churn",
+    "bench:timing": "node src/run.mjs timing",
+    "bench:memory": "node src/run.mjs memory",
+    "bench:conformance": "node src/run.mjs conformance",
+    "report": "node src/run.mjs report"
+  },
+  "dependencies": {
+    "playwright-core": "1.62.0"
+  }
+}

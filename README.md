@@ -145,7 +145,26 @@ npm run build:svelte
 npm run build:solid
 ```
 
-There is no permanent automated test suite. Validate behavior manually against [SPEC.md](./SPEC.md), especially add, delete, move, edit commit/cancel, filter, reset, persistence, empty-title behavior, and the XSS text case from the spec.
+The behavioral contract is verified by the bench conformance suite (below), which drives the
+SPEC.md acceptance checklist through a real browser against every implementation. For quick
+manual checks, focus on add, delete, move, edit commit/cancel, filter, reset, persistence,
+empty-title behavior, and the XSS text case from the spec.
+
+## Benchmarks
+
+`bench/` measures all seven implementations apples to apples - same app, same markup, so the
+differences are the rendering strategies themselves:
+
+```sh
+npm --prefix bench install
+npm run bench
+```
+
+It produces a DOM write ledger (MutationObserver counts per user action), interaction latency
+on a 1,000-card board (production builds, CPU-throttled, medians), shipped-bytes vs
+authored-lines comparisons, memory/listener counts, and the behavioral conformance matrix.
+Results land in `bench/results/`, and a self-contained report with charts is written to
+`bench/report/index.html`. See [bench/README.md](./bench/README.md) for methodology.
 
 ## Learning Focus
 
